@@ -1,0 +1,15 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  made: false
+  loc_x: 1
+  loc_y: 1
+  player: one
+  team: one
+
+two:
+  made: false
+  loc_x: 1
+  loc_y: 1
+  player: two
+  team: two

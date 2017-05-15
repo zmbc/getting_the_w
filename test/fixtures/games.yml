@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  home_team: one
+  visiting_team: one
+  date: 2017-05-11
+
+two:
+  home_team: two
+  visiting_team: two
+  date: 2017-05-11
