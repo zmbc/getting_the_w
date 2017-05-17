@@ -14,7 +14,14 @@ namespace :scrape do
   desc "Scrape the last day"
   task last_day: :environment do
     now = Time.now
-    schedule = month_schedule(now.year, now.month)
+    if now.day == 1 && now.month == 1
+      schedule = month_schedule(now.year - 1, 12)
+    elsif now.day == 1
+      schedule = month_schedule(now.year, now.month - 1)
+    else
+      schedule = month_schedule(now.year, now.month)
+    end
+
     schedule['mscd']['g'].each do |game|
       game_date = Date.parse(game['gdte'])
       if game_date >= now.to_date - 1 && game_date <= now.to_date
