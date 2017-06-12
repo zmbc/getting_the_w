@@ -241,6 +241,15 @@ function makeTeamEffectShotChart(element, data) {
     .append('path')
     .attr('class', 'dashed-ring')
     .merge(dashedRings)
+    .each(function(d) {
+      if (d.frequency_delta > 0) {
+        d.innerRadius = 0.46;
+        d.outerRadius = 0.46;
+      } else {
+        d.innerRadius = 0.54;
+        d.outerRadius = 0.54;
+      }
+    })
     .attr('transform', function(d) {
       return 'translate(' + (d.x + 25) + ', ' + (35 - d.y) + ')';
     })
