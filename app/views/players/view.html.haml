@@ -1,2 +1,7 @@
 %h1=@player.full_name
-.viz
+.row
+  %svg.viz.col-xs-12.col-md-8
+  .well.col-xs-12.col-md-4
+- content_for(:js) do
+  :javascript
+    makeTeamEffectShotChart(d3.select('.viz'), gon.team_effect_shot_chart_data);

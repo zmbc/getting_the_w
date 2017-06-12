@@ -2,7 +2,7 @@ require 'net/http'
 require 'json'
 
 namespace :scrape do
-  task :scrape_season, [:year] => :environment do |t, args|
+  task :season, [:year] => :environment do |t, args|
     scrape_season(args[:year])
   end
 
@@ -138,8 +138,8 @@ def parse_period(play_by_play, home_id, away_id, season)
         game_id: game_id
       })
       shot.made = (play['etype'] == 1)
-      shot.loc_x = (play['locX'] / 10.0).round
-      shot.loc_y = (play['locY'] / 10.0).round
+      shot.loc_x = play['locX']
+      shot.loc_y = play['locY']
       shot.period = play_by_play['g']['p']
       split_clock = play['cl'].split(":")
       shot.seconds_remaining = (split_clock[0].to_i * 60) + split_clock[1].to_i
