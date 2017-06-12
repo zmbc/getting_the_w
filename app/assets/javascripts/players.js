@@ -169,15 +169,19 @@ function makeTeamEffectShotChart(element, data) {
   var height = 500;
   var svg = element;
 
-  var biggestDiffFromZero = d3.max(data, function(x) {return Math.abs(x.frequency_delta)});
-
+  // NB: 1 and -1 are the theoretical max and min, but they will NEVER
+  // occur except for in statistical noise. I arbitrarily chose 0.03 and -0.03 as
+  // a reasonable expectation for highest actual player impact.
   var sizeScale = d3.scaleLinear()
-                    .domain([-biggestDiffFromZero, 0, biggestDiffFromZero])
-                    .range([0, 0.5, 1]);
+                    .domain([-1, -0.03, 0, 0.03, 1])
+                    .range([0, 0, 0.5, 1, 1]);
 
+  // NB: 3 and -3 are the theoretical max and min, but they will almost never
+  // occur except for in statistical noise. I arbitrarily chose 1.5 and -1.5 as
+  // a reasonable expectation for highest actual player impact.
   var colorScale = d3.scaleLinear()
-                     .domain([-3, 0, 3])
-                     .range(['#5458A2', '#FADC97', '#B02B48']);
+                     .domain([-3, -1.5, 0, 1.5, 3])
+                     .range(['#5458A2', '#5458A2', '#FADC97', '#B02B48', '#B02B48']);
 
   var rings = svg.selectAll('path.ring').data(data);
   var dashedRings = svg.selectAll('path.dashed-ring').data(data);
@@ -205,9 +209,7 @@ function makeTeamEffectShotChart(element, data) {
 
   var dashedArc = d3.arc()
     .startAngle(0)
-    .endAngle(Math.PI * 2)
-    .innerRadius(0.5)
-    .outerRadius(0.5);
+    .endAngle(Math.PI * 2);
 
   rings.enter()
          .append('path')
