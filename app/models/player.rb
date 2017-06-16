@@ -44,8 +44,8 @@ class Player < ApplicationRecord
 
     on_court = self.shots_on_court.where(on_courts: {offense: true})
       .where(game_id: games)
-      .group('(3 * round(loc_x / 30))')
-      .group('(3 * round(loc_y / 30))')
+      .group('(7 * round(loc_x / 70))')
+      .group('(7 * round(loc_y / 70))')
       .group(:made)
       .group(:three)
       .count
@@ -53,8 +53,8 @@ class Player < ApplicationRecord
     off_court = Shot
       .where(game_id: games, team_id: teams)
       .where.not(id: self.shots_on_court.ids)
-      .group('(3 * round(loc_x / 30))')
-      .group('(3 * round(loc_y / 30))')
+      .group('(7 * round(loc_x / 70))')
+      .group('(7 * round(loc_y / 70))')
       .group(:made)
       .group(:three)
       .count
@@ -84,8 +84,8 @@ class Player < ApplicationRecord
     on_court = Shot
       .where(game_id: games)
       .where(id: self.shots_on_court.where(on_courts: {offense: false}).ids)
-      .group('(3 * round(loc_x / 30))')
-      .group('(3 * round(loc_y / 30))')
+      .group('(7 * round(loc_x / 70))')
+      .group('(7 * round(loc_y / 70))')
       .group(:made)
       .group(:three)
       .count
@@ -94,8 +94,8 @@ class Player < ApplicationRecord
       .where(game_id: games)
       .where.not(team_id: teams)
       .where.not(id: self.shots_on_court.ids)
-      .group('(3 * round(loc_x / 30))')
-      .group('(3 * round(loc_y / 30))')
+      .group('(7 * round(loc_x / 70))')
+      .group('(7 * round(loc_y / 70))')
       .group(:made)
       .group(:three)
       .count
@@ -166,7 +166,7 @@ class Player < ApplicationRecord
         result_item = {x: loc_x, y: loc_y, made: 0, missed: 0, pts_per_shot: 0}
         result.push result_item
       end
-      result_item[made ? :made : :missed] = amount
+      result_item[made ? :made : :missed] += amount
       result_item[:pts_per_shot] += amount * (three ? 3 : 2) if made
     end
 

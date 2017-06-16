@@ -90,7 +90,11 @@
 }
 
 .dashed-ring {
-  stroke-width: 0.08;
+  stroke-width: 0.16;
   stroke: #aaa;
   stroke-dasharray: 0.1;
+}
+
+.tab-pane {
+  overflow: auto;
 }

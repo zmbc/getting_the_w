@@ -1,7 +1,19 @@
 %h1=@player.full_name
 .row
-  %svg.viz.col-xs-12.col-md-8
-  .well.col-xs-12.col-md-4
+  %ul.nav.nav-tabs
+    %li.active
+      %a#player-tab{href: "#player", 'data-toggle' => "tab"}Player
+    %li
+      %a#team-tab{href: "#team", 'data-toggle' => "tab"}Team
+    %li
+      %a#opposing-team-tab{href: "#opposing-team", 'data-toggle' => "tab"}Opposing Team
+  .tab-content
+    #player.tab-pane.fade.in.active
+      %svg#player-viz.col-xs-12.col-md-8.col-md-offset-2
+    #team.tab-pane.fade.in.active
+      %svg#team-viz.col-xs-12.col-md-8.col-md-offset-2
+    #opposing-team.tab-pane.fade.in.active
+      %svg#opposing-team-viz.col-xs-12.col-md-8.col-md-offset-2
 - content_for(:js) do
   :javascript
-    makeTeamEffectShotChart(d3.select('.viz'), gon.team_effect_shot_chart_data);
+    getPlayerShotChart();
