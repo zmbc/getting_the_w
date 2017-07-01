@@ -22,3 +22,7 @@
 every :day, at: '4:00am' do
   rake 'scrape:last_day'
 end
+
+every :sunday, at: '4:00am' do
+  rake 'scrape:last_x_days[7]'
+end
