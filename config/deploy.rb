@@ -29,10 +29,10 @@ lock '3.8.1'
 # Default value for keep_releases is 5
 # set :keep_releases, 5
 
-set :application, 'wnba'
-set :repo_url, 'git@github.com:zmbc/wnba.git' # Edit this to match your repository
+set :application, 'getting_the_w'
+set :repo_url, 'git@github.com:zmbc/getting_the_w.git' # Edit this to match your repository
 set :branch, :master
-set :deploy_to, '/home/deploy/wnba'
+set :deploy_to, '/home/deploy/getting_the_w'
 set :pty, true
 set :linked_files, %w[config/database.yml config/application.yml]
 set :linked_dirs, %w[log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system public/uploads]
