@@ -6,99 +6,103 @@ class Player < ApplicationRecord
   has_many :on_courts
   has_many :shots_on_court, through: :on_courts, source: :shot
 
+  def self.remove_unnecessary!
+    select('count(players.id), players.id')
+      .left_joins(:on_courts)
+      .group('players.id')
+      .having('count(on_courts.id) = 0')
+      .destroy_all
+  end
+
   def full_name
-    "#{self.first_name} #{self.last_name}"
+    "#{first_name} #{last_name}"
   end
 
   def shot_distribution_and_accuracy(season)
-    raw_groups = self.shots
-      .joins(:game)
-      .where(games: {date: Date.new(season)..Date.new(season).end_of_year})
-      .group('(2 * round(loc_x / 20))')
-      .group('(2 * round(loc_y / 20))')
-      .group(:made)
-      .group(:three)
-      .count
+    raw_groups = shots
+                 .joins(:game)
+                 .where(games: { date: Date.new(season)..Date.new(season).end_of_year })
+                 .group('(2 * round(loc_x / 20))')
+                 .group('(2 * round(loc_y / 20))')
+                 .group(:made)
+                 .group(:three)
+                 .count
 
     groups_to_hashes raw_groups
   end
 
   def team_shot_deltas_distribution(season)
-    games = self.shots_on_court
-      .joins(:game)
-      .where(games: {date: Date.new(season)..Date.new(season).end_of_year})
-      .map {|x| x.game_id}
-      .uniq
+    games = shots_on_court
+            .joins(:game)
+            .where(games: { date: Date.new(season)..Date.new(season).end_of_year })
+            .map(&:game_id)
+            .uniq
 
     # BUG: If a player has played for two teams within a season, and they have
     # played each other, both will be counted as this player's team.
-    # It's totally possible to fix this by checking on a game-by-game basis which
-    # team a player was playing on, but it is SLOW.
+    # It's totally possible to fix this by checking on a game-by-game basis
+    # which team a player was playing on, but it is SLOW.
     teams = games.map do |game|
-      self.shots_on_court
-        .where(on_courts: {offense: true})
-        .where(game_id: game)
-        .first
+      shots_on_court
+        .find_by(on_courts: { offense: true }, game_id: game)
         .team_id
     end
 
-    on_court = self.shots_on_court.where(on_courts: {offense: true})
-      .where(game_id: games)
-      .group('(7 * round(loc_x / 70))')
-      .group('(7 * round(loc_y / 70))')
-      .group(:made)
-      .group(:three)
-      .count
+    on_court = shots_on_court.where(on_courts: { offense: true })
+                             .where(game_id: games)
+                             .group('(7 * round(loc_x / 70))')
+                             .group('(7 * round(loc_y / 70))')
+                             .group(:made)
+                             .group(:three)
+                             .count
 
     off_court = Shot
-      .where(game_id: games, team_id: teams)
-      .where.not(id: self.shots_on_court.ids)
-      .group('(7 * round(loc_x / 70))')
-      .group('(7 * round(loc_y / 70))')
-      .group(:made)
-      .group(:three)
-      .count
+                .where(game_id: games, team_id: teams)
+                .where.not(id: shots_on_court.ids)
+                .group('(7 * round(loc_x / 70))')
+                .group('(7 * round(loc_y / 70))')
+                .group(:made)
+                .group(:three)
+                .count
 
     deltas(on_court, off_court)
   end
 
   def opposing_team_shot_deltas_distribution(season)
-    games = self.shots_on_court
-      .joins(:game)
-      .where(games: {date: Date.new(season)..Date.new(season).end_of_year})
-      .map {|x| x.game_id}
-      .uniq
+    games = shots_on_court
+            .joins(:game)
+            .where(games: { date: Date.new(season)..Date.new(season).end_of_year })
+            .map(&:game_id)
+            .uniq
 
     # BUG: If a player has played for two teams within a season, and they have
     # played each other, neither will be counted as this player's opposing team.
     # It's totally possible to fix this by checking on a game-by-game basis which
     # team a player was playing on, but it is SLOW.
     teams = games.map do |game|
-      self.shots_on_court
-        .where(on_courts: {offense: true})
-        .where(game_id: game)
-        .first
+      shots_on_court
+        .find_by(on_courts: { offense: true }, game_id: game)
         .team_id
     end
 
     on_court = Shot
-      .where(game_id: games)
-      .where(id: self.shots_on_court.where(on_courts: {offense: false}).ids)
-      .group('(7 * round(loc_x / 70))')
-      .group('(7 * round(loc_y / 70))')
-      .group(:made)
-      .group(:three)
-      .count
+               .where(game_id: games)
+               .where(id: shots_on_court.where(on_courts: { offense: false }).ids)
+               .group('(7 * round(loc_x / 70))')
+               .group('(7 * round(loc_y / 70))')
+               .group(:made)
+               .group(:three)
+               .count
 
     off_court = Shot
-      .where(game_id: games)
-      .where.not(team_id: teams)
-      .where.not(id: self.shots_on_court.ids)
-      .group('(7 * round(loc_x / 70))')
-      .group('(7 * round(loc_y / 70))')
-      .group(:made)
-      .group(:three)
-      .count
+                .where(game_id: games)
+                .where.not(team_id: teams)
+                .where.not(id: shots_on_court.ids)
+                .group('(7 * round(loc_x / 70))')
+                .group('(7 * round(loc_y / 70))')
+                .group(:made)
+                .group(:three)
+                .count
 
     deltas(on_court, off_court)
   end
@@ -109,22 +113,17 @@ class Player < ApplicationRecord
     on_court = groups_to_hashes(on_court)
     off_court = groups_to_hashes(off_court)
 
-    on_court_count = on_court.map {|x| x[:made] + x[:missed]}.sum
-    off_court_count = off_court.map {|x| x[:made] + x[:missed]}.sum
+    on_court_count = on_court.map { |x| x[:made] + x[:missed] }.sum
+    off_court_count = off_court.map { |x| x[:made] + x[:missed] }.sum
 
-    puts 'on court count: ' + on_court_count.to_s
-    puts 'off court count: ' + off_court_count.to_s
-
-    on_court.each {|a| a[:on_court] = true}
-    off_court.each {|a| a[:on_court] = false}
+    on_court.each { |a| a[:on_court] = true }
+    off_court.each { |a| a[:on_court] = false }
 
     (on_court + off_court)
-      .group_by{|h| [h[:x], h[:y]]}
+      .group_by { |h| [h[:x], h[:y]] }
       .map do |k, v|
-        puts 'key: ' + k.to_s if k == [0, 0]
-        puts 'value: ' + v.to_s if k == [0, 0]
-        on_court_for_loc = v.find {|x| x[:on_court]} || {made: 0, missed: 0, pts_per_shot: 0}
-        off_court_for_loc = v.find {|x| !x[:on_court]} || {made: 0, missed: 0, pts_per_shot: 0}
+        on_court_for_loc = v.find { |x| x[:on_court] } || { made: 0, missed: 0, pts_per_shot: 0 }
+        off_court_for_loc = v.find { |x| !x[:on_court] } || { made: 0, missed: 0, pts_per_shot: 0 }
 
         loc_x = k[0]
         loc_y = k[1]
@@ -161,9 +160,9 @@ class Player < ApplicationRecord
       made = key[2]
       three = key[3]
       result_item = result.find { |item| item[:x] == loc_x && item[:y] == loc_y }
-      if !result_item
+      unless result_item
         # At first, pts_per_shot is actually total points
-        result_item = {x: loc_x, y: loc_y, made: 0, missed: 0, pts_per_shot: 0}
+        result_item = { x: loc_x, y: loc_y, made: 0, missed: 0, pts_per_shot: 0 }
         result.push result_item
       end
       result_item[made ? :made : :missed] += amount
