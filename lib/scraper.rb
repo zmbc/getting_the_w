@@ -95,15 +95,15 @@ module Scraper
     # right)
     home_players = get_starting_lineup(period, home_id)
     away_players = get_starting_lineup(period, away_id)
-    shots = []
     period.events.each do |event|
       if event.shot?
-        shot = create_shot(event: event,
-                           period: period,
-                           home_id: home_id,
-                           home_players: home_players,
-                           away_players: away_players)
-        shots.push shot
+        create_shot(
+          event: event,
+          period: period,
+          home_id: home_id,
+          home_players: home_players,
+          away_players: away_players
+        )
       elsif event.type == :substitution
         players = event.team_id == home_id ? home_players : away_players
         players = perform_substitution(players: players,
@@ -116,11 +116,6 @@ module Scraper
         end
       end
     end
-
-    # Uses activerecord-import to do everything at once. This will generate one
-    # big insert. Note that some of the shots are already in the database, but the
-    # insert fails because the unique id is the same (and also the game_id + evt unique index).
-    DB::Shot.import shots, on_duplicate_key_update: SHOT_UPDATE
   end
 
   private_class_method def self.perform_substitution(players: nil,
@@ -142,13 +137,15 @@ module Scraper
     players
   end
 
-  private_class_method def self.create_shot(event: nil,
-                                            period: nil,
-                                            home_id: nil,
-                                            home_players: nil,
-                                            away_players: nil)
-    shot = DB::Shot.new(evt: event.index,
-                        game_id: period.game.id)
+  private_class_method def self.create_shot(
+    event: nil,
+    period: nil,
+    home_id: nil,
+    home_players: nil,
+    away_players: nil
+  )
+    shot = DB::Shot.find_or_initialize_by(evt: event.index,
+                                          game_id: period.game.id)
     shot.made = (event.type == :made_shot)
     shot.loc_x = event.loc_x
     shot.loc_y = event.loc_y
@@ -162,11 +159,11 @@ module Scraper
       shot.offensive_players = home_players.to_a
       shot.defensive_players = away_players.to_a
     else
-      shot.defensive_players = home_players.to_a
       shot.offensive_players = away_players.to_a
+      shot.defensive_players = home_players.to_a
     end
 
-    shot
+    shot.save!
   end
 
   private_class_method def self.get_starting_lineup(period, team_id)
