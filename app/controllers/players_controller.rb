@@ -2,14 +2,12 @@ class PlayersController < ApplicationController
   def search
     if params[:q]
       @q = params[:q]
-      @players = []
+      @players = Player
 
-      params[:q].split(' ').each do |word|
-        @players += Player.where('first_name like :query or last_name like :query',
+      @q.split(' ').each do |word|
+        @players = @players.where('first_name like :query or last_name like :query',
                                 query: "#{word}%")
       end
-
-      @players.uniq!
     else
       @players = []
       @q = nil
