@@ -140,7 +140,9 @@ function makePlayerShotChart(element, data, namespace) {
 
   svg.call(tip);
 
-  drawCourt(svg, width);
+  if (svg.select('.shot-chart-court').empty()) {
+    drawCourt(svg, width);
+  }
 
   circles.enter()
          .append('circle')
@@ -219,7 +221,9 @@ function makeTeamEffectShotChart(element, data, namespace) {
 
   svg.call(tip);
 
-  drawCourt(svg, width);
+  if (svg.select('.shot-chart-court').empty()) {
+    drawCourt(svg, width);
+  }
 
   var arc = d3.arc()
     .startAngle(0)
