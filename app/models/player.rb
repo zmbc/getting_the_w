@@ -18,6 +18,13 @@ class Player < ApplicationRecord
     "#{first_name} #{last_name}"
   end
 
+  def position_friendly
+    position.sub('G', 'Guard')
+      .sub('F', 'Forward')
+      .sub('C', 'Center')
+      .sub('-', '/')
+  end
+
   def shot_distribution_and_accuracy(season)
     raw_groups = shots
                  .joins(:game)

@@ -1,8 +1,8 @@
 .row
   .col-md-12
     .jumbotron.text-center
-      %h1 Search for a player
-      = form_tag('/', {style: 'margin-top:20px', method: 'get'}) do
+      %h2 See a WNBA player's impact
+      = form_tag('/', {style: 'margin-top:30px', method: 'get'}) do
         .input-group.input-group-lg
           %input.form-control{placeholder: "Player name", value: @q, type: "text", name: "q"}
           .input-group-btn

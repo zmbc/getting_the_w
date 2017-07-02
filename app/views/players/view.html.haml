@@ -1,4 +1,7 @@
-%h1=@player.full_name
+%h1
+  =@player.full_name
+  %small.text-muted="#{@player.position_friendly}, #{@player.team.full_name}"
+
 %ul.pagination
   %li
     %a{href: "?season=#{@years.first}"} &laquo;
