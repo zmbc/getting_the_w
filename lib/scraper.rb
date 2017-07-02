@@ -50,10 +50,13 @@ module Scraper
   end
 
   private_class_method def self.scrape_schedule(schedule)
-    schedule.games.each do |game|
-      Utility.wait_a_sec
-      scrape_game game
-    end
+    today = Time.zone.today
+    schedule.games
+      .select { |game| game.date < today }
+      .each do |game|
+        Utility.wait_a_sec
+        scrape_game game
+      end
   end
 
   private_class_method def self.scrape_game(game)
