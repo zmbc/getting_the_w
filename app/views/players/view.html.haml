@@ -1,12 +1,12 @@
 %h1=@player.full_name
 %ul.pagination
-  %li{class: @years.include?(@season - 1) ? '' : 'disabled'}
-    %a{href: "?season=#{@season - 1}"} &laquo;
-  - @years.each do |year|
+  %li
+    %a{href: "?season=#{@years.first}"} &laquo;
+  - @years.select{|x| (x - @season).abs <= 3}.each do |year|
     %li{class: year == @season ? 'active' : ''}
       %a{href: "?season=#{year}"}=year
-  %li{class: @years.include?(@season + 1) ? '' : 'disabled'}
-    %a{href: "?season=#{@season + 1}"} &raquo;
+  %li
+    %a{href: "?season=#{@years.last}"} &raquo;
 .row
   %ul.nav.nav-tabs
     %li.active

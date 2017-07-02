@@ -161,8 +161,8 @@ function makePlayerShotChart(element, data, namespace) {
          .on('mouseover', function(d) {
            (tip.show.bind(this))(d);
            var rect = d3.select('.d3-tip-player').node().getBoundingClientRect();
-           tip.style('top', (d3.event.pageY - rect.height) + 'px')
-              .style('left', (d3.event.pageX - rect.width) + 'px');
+           tip.style('top', (d3.event.pageY - rect.height - 10) + 'px')
+              .style('left', (d3.event.pageX - (rect.width / 2)) + 'px');
          })
          .on('mousemove', function(d) {
            var rect = d3.select('.d3-tip-player').node().getBoundingClientRect();
@@ -262,8 +262,8 @@ function makeTeamEffectShotChart(element, data, namespace) {
          .on('mouseover', function(d) {
            (tip.show.bind(this))(d);
            var rect = d3.select('.d3-tip-team').node().getBoundingClientRect();
-           tip.style('top', (d3.event.pageY - rect.height) + 'px')
-              .style('left', (d3.event.pageX - rect.width) + 'px');
+           tip.style('top', (d3.event.pageY - rect.height - 10) + 'px')
+              .style('left', (d3.event.pageX - (rect.width / 2)) + 'px');
          })
          .on('mousemove', function(d) {
            var rect = d3.select('.d3-tip-team').node().getBoundingClientRect();
