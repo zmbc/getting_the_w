@@ -46,9 +46,9 @@ module Scraper
               team_id: json[TEAM_ID_PROPERTY],
               type: type,
               foul_type: foul_type,
-              index: Utility.to_i_or_nil(json[INDEX_PROPERTY]),
-              loc_x: Utility.to_i_or_nil(json[LOC_X_PROPERTY]),
-              loc_y: Utility.to_i_or_nil(json[LOC_Y_PROPERTY]),
+              index: Utility.to_i_or_nil(json[INDEX_PROPERTY], allow_zero: true),
+              loc_x: Utility.to_i_or_nil(json[LOC_X_PROPERTY], allow_zero: true),
+              loc_y: Utility.to_i_or_nil(json[LOC_Y_PROPERTY], allow_zero: true),
               seconds_remaining: seconds_remaining,
               three: (json[THREE_PROPERTY] == THREE_TRUE))
         end

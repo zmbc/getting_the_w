@@ -12,8 +12,8 @@ module Scraper
       known_dupes.key?(id) ? known_dupes[id] : id
     end
 
-    def self.to_i_or_nil(str_or_i)
-      like_nil = ['', 0].include? str_or_i
+    def self.to_i_or_nil(str_or_i, allow_zero: false)
+      like_nil = (allow_zero ? ['', nil] : ['', nil, 0]).include? str_or_i
       like_nil ? nil : str_or_i.to_i
     end
 

@@ -21,6 +21,8 @@ class Player < ApplicationRecord
   def shot_distribution_and_accuracy(season)
     raw_groups = shots
                  .joins(:game)
+                 .where.not(loc_x: nil)
+                 .where.not(loc_y: nil)
                  .where(games: { date: Date.new(season)..Date.new(season).end_of_year })
                  .group('(2 * round(loc_x / 20))')
                  .group('(2 * round(loc_y / 20))')
@@ -49,6 +51,8 @@ class Player < ApplicationRecord
     end
 
     on_court = shots_on_court.where(on_courts: { offense: true })
+                             .where.not(loc_x: nil)
+                             .where.not(loc_y: nil)
                              .where(game_id: games)
                              .group('(7 * round(loc_x / 70))')
                              .group('(7 * round(loc_y / 70))')
@@ -59,6 +63,8 @@ class Player < ApplicationRecord
     off_court = Shot
                 .where(game_id: games, team_id: teams)
                 .where.not(id: shots_on_court.ids)
+                .where.not(loc_x: nil)
+                .where.not(loc_y: nil)
                 .group('(7 * round(loc_x / 70))')
                 .group('(7 * round(loc_y / 70))')
                 .group(:made)
@@ -88,6 +94,8 @@ class Player < ApplicationRecord
     on_court = Shot
                .where(game_id: games)
                .where(id: shots_on_court.where(on_courts: { offense: false }).ids)
+               .where.not(loc_x: nil)
+               .where.not(loc_y: nil)
                .group('(7 * round(loc_x / 70))')
                .group('(7 * round(loc_y / 70))')
                .group(:made)
@@ -98,6 +106,8 @@ class Player < ApplicationRecord
                 .where(game_id: games)
                 .where.not(team_id: teams)
                 .where.not(id: shots_on_court.ids)
+                .where.not(loc_x: nil)
+                .where.not(loc_y: nil)
                 .group('(7 * round(loc_x / 70))')
                 .group('(7 * round(loc_y / 70))')
                 .group(:made)
