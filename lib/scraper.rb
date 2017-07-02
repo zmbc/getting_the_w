@@ -62,8 +62,9 @@ module Scraper
   private_class_method def self.scrape_game(game)
     # We've probably seen the teams before, but it's far easier to just check
     # every time than to force a preliminary team-gathering step.
-    create_or_update_team game.home_team
-    create_or_update_team game.away_team
+    overwrite_teams = Time.zone.today.year == game.season
+    create_or_update_team(game.home_team, overwrite: overwrite_teams)
+    create_or_update_team(game.away_team, overwrite: overwrite_teams)
     create_or_update_game game
     scrape_shots_from_game game
   end
@@ -289,10 +290,17 @@ module Scraper
     player
   end
 
-  private_class_method def self.create_or_update_team(api_team)
+  private_class_method def self.create_or_update_team(api_team, overwrite: false)
     team = DB::Team.find_or_initialize_by(id: api_team.id)
-    team.city = api_team.city
-    team.name = api_team.name
+
+    if overwrite
+      team.city = api_team.city
+      team.name = api_team.name
+    else
+      team.city ||= api_team.city
+      team.name ||= api_team.name
+    end
+
     team.save!
   end
 
