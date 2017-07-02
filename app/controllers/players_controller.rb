@@ -15,8 +15,14 @@ class PlayersController < ApplicationController
   end
 
   def view
-    @years = Game.minimum(:date).year..Game.maximum(:date).year
     @player = Player.find params[:id].to_i
+    first_year = Game.includes(:shots)
+                     .where(shots: {player_id: @player.id})
+                     .minimum(:date).year
+    last_year = Game.includes(:shots)
+                     .where(shots: {player_id: @player.id})
+                     .maximum(:date).year
+    @years = first_year..last_year
     gon.player_id = @player.id
     @season = params[:season].blank? ? Time.now.year : params[:season].to_i
     gon.season = @season
