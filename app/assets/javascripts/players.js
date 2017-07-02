@@ -158,7 +158,17 @@ function makePlayerShotChart(element, data, namespace) {
          .attr('fill', function(d) {
            return colorScale(d.pts_per_shot);
          })
-         .on('mouseover', tip.show)
+         .on('mouseover', function(d) {
+           (tip.show.bind(this))(d);
+           var rect = d3.select('.d3-tip-player').node().getBoundingClientRect();
+           tip.style('top', (d3.event.pageY - rect.height) + 'px')
+              .style('left', (d3.event.pageX - rect.width) + 'px');
+         })
+         .on('mousemove', function(d) {
+           var rect = d3.select('.d3-tip-player').node().getBoundingClientRect();
+           tip.style('top', (d3.event.pageY - rect.height - 10) + 'px')
+              .style('left', (d3.event.pageX - (rect.width / 2)) + 'px');
+         })
          .on('mouseout', tip.hide);
 
   circles.exit().remove();
@@ -249,7 +259,17 @@ function makeTeamEffectShotChart(element, data, namespace) {
            var impact = Math.abs((d.on_court.frequency * d.on_court.pts_per_shot) - (d.off_court.frequency * d.off_court.pts_per_shot));
            return opacityScale(impact);
          })
-         .on('mouseover', tip.show)
+         .on('mouseover', function(d) {
+           (tip.show.bind(this))(d);
+           var rect = d3.select('.d3-tip-team').node().getBoundingClientRect();
+           tip.style('top', (d3.event.pageY - rect.height) + 'px')
+              .style('left', (d3.event.pageX - rect.width) + 'px');
+         })
+         .on('mousemove', function(d) {
+           var rect = d3.select('.d3-tip-team').node().getBoundingClientRect();
+           tip.style('top', (d3.event.pageY - rect.height - 10) + 'px')
+              .style('left', (d3.event.pageX - (rect.width / 2)) + 'px');
+         })
          .on('mouseout', tip.hide);
 
   rings.exit().remove();
