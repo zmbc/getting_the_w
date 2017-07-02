@@ -1,4 +1,12 @@
 %h1=@player.full_name
+%ul.pagination
+  %li{class: @years.include?(@season - 1) ? '' : 'disabled'}
+    %a{href: "?season=#{@season - 1}"} &laquo;
+  - @years.each do |year|
+    %li{class: year == @season ? 'active' : ''}
+      %a{href: "?season=#{year}"}=year
+  %li{class: @years.include?(@season + 1) ? '' : 'disabled'}
+    %a{href: "?season=#{@season + 1}"} &raquo;
 .row
   %ul.nav.nav-tabs
     %li.active
@@ -16,4 +24,6 @@
       %svg#opposing-team-viz.col-xs-12.col-md-8.col-md-offset-2
 - content_for(:js) do
   :javascript
-    getPlayerShotChart();
+    $(document).on('turbolinks:load', function() {
+      getPlayerShotChart();
+    });

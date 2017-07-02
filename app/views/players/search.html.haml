@@ -1,0 +1,13 @@
+.row
+  .col-md-12
+    .jumbotron.text-center
+      %h1 Search for a player
+      = form_tag('/', {style: 'margin-top:20px', method: 'get'}) do
+        .input-group.input-group-lg
+          %input.form-control{placeholder: "Player name", value: @q, type: "text", name: "q"}
+          .input-group-btn
+            %button.btn.btn-primary{type: 'submit'} Search
+.row
+  .list_group
+    - @players.each do |p|
+      %a.list-group-item.list-group-item-action{href: "/players/#{p.id}"}=p.full_name

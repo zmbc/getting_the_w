@@ -299,5 +299,7 @@ function getOpposingTeamShotChart() {
   });
 }
 
-$('#team-tab').one('click', getTeamShotChart);
-$('#opposing-team-tab').one('click', getOpposingTeamShotChart);
+$(document).on('turbolinks:load', function() {
+  $('#team-tab').one('click', getTeamShotChart);
+  $('#opposing-team-tab').one('click', getOpposingTeamShotChart);
+});
