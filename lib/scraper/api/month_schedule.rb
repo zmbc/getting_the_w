@@ -1,6 +1,9 @@
 module Scraper
   module API
     class MonthSchedule
+      module Pre2015
+        GAMES_PROPERTY = 'scd'
+      end
       ROOT_PROPERTY = 'mscd'.freeze
       GAMES_PROPERTY = 'g'.freeze
 
@@ -30,6 +33,12 @@ module Scraper
         )
         response = Net::HTTP.get(uri)
         json = JSON.parse(response)
+
+        # Before 2015, off-season months had only a 'scd' property
+        return new(season: season,
+                   month: month,
+                   games: []) if json['scd'] == [] && !json[ROOT_PROPERTY]
+
         games = json[ROOT_PROPERTY][GAMES_PROPERTY].map do |game_json|
           API::Game.from_json game_json, season
         end

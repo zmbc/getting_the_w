@@ -40,6 +40,20 @@ class Player < ApplicationRecord
     groups_to_hashes raw_groups
   end
 
+  def distance_distribution_and_accuracy(season)
+    raw_groups = shots
+                 .joins(:game)
+                 .where.not(loc_x: nil)
+                 .where.not(loc_y: nil)
+                 .where(games: { date: Date.new(season)..Date.new(season).end_of_year })
+                 .group('round(sqrt(pow(loc_x / 10, 2) + pow(loc_y / 10, 2)) / 2) * 2')
+                 .group(:made)
+                 .group(:three)
+                 .count
+
+    distance_groups_to_hashes raw_groups
+  end
+
   def team_shot_deltas_distribution(season)
     games = shots_on_court
             .joins(:game)
@@ -172,14 +186,33 @@ class Player < ApplicationRecord
     result = []
 
     raw_groups.each do |key, amount|
-      loc_x = key[0]
-      loc_y = key[1]
-      made = key[2]
-      three = key[3]
+      loc_x, loc_y, made, three = key
       result_item = result.find { |item| item[:x] == loc_x && item[:y] == loc_y }
       unless result_item
         # At first, pts_per_shot is actually total points
         result_item = { x: loc_x, y: loc_y, made: 0, missed: 0, pts_per_shot: 0 }
+        result.push result_item
+      end
+      result_item[made ? :made : :missed] += amount
+      result_item[:pts_per_shot] += amount * (three ? 3 : 2) if made
+    end
+
+    result.each do |x|
+      x[:pts_per_shot] = x[:pts_per_shot].to_f / (x[:made] + x[:missed])
+    end
+
+    result
+  end
+
+  def distance_groups_to_hashes(raw_groups)
+    result = []
+
+    raw_groups.each do |key, amount|
+      distance, made, three = key
+      result_item = result.find { |item| item[:distance] == distance }
+      unless result_item
+        # At first, pts_per_shot is actually total points
+        result_item = { distance: distance, made: 0, missed: 0, pts_per_shot: 0 }
         result.push result_item
       end
       result_item[made ? :made : :missed] += amount

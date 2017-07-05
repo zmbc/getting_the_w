@@ -295,31 +295,145 @@ function makeTeamEffectShotChart(element, data, namespace) {
   dashedRings.exit().remove();
 }
 
+function makeDistanceChart(svg, data) {
+  var width = 500;
+  var height = 450;
+  var margin = {
+    top: 10,
+    bottom: 40,
+    left: 40,
+    right: 0
+  };
+
+  svg.attr('width', width)
+      .attr('height', height)
+      .attr('viewBox', "0 0 " + width + " " + height);
+
+  var chartHeight = height - margin.top - margin.bottom;
+  var chartWidth = width - margin.left - margin.right;
+
+  var g = svg.append('g')
+             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+             .attr('height', chartHeight)
+             .attr('width', chartWidth);
+
+  var xScale = d3.scaleLinear()
+    .range([chartWidth, 0])
+    .domain([-1, d3.max(data, function(d) { return d.distance; }) + 2]);
+
+  var yScale = d3.scaleLinear()
+      .range([chartHeight, 0])
+      .domain([-0.1, d3.max(data, function(d) { return d.pts_per_shot; }) + 0.1]);
+
+  var rScale = d3.scaleLinear()
+      .domain([0, d3.max(data, function(d) { return d.made + d.missed; })])
+      .range([0, 25]);
+
+  var colorScale = d3.scaleLinear()
+                     .domain([0, 0.944, 3])
+                     .range(['#5458A2', '#FADC97', '#B02B48']);
+
+  svg.append("g")
+      .attr("transform", "translate(" + margin.left + "," + (chartHeight + margin.top) + ")")
+      .call(
+        d3.axisBottom(xScale)
+          .ticks(5)
+          .tickFormat(function(d) {
+            return Math.round(d) + 'ft';
+          })
+      );
+
+  svg.append("g")
+      .attr("transform", "translate(" + (margin.left - 30) + "," + ((chartHeight / 2) + margin.top) + ")")
+      .append("text")
+        .attr('transform', 'rotate(-90)')
+        .attr("text-anchor", "middle")
+        .text('Points Per Shot');
+
+  svg.append("g")
+      .attr("transform", "translate(" + (margin.left + (chartWidth / 2)) + "," + (chartHeight + margin.top + 30) + ")")
+      .append("text")
+        .attr("text-anchor", "middle")
+        .text('Distance');
+
+  svg.append("g")
+      .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+      .call(d3.axisLeft(yScale).ticks(5));
+
+  d3.select(".d3-tip-distance").remove();
+
+  var tip = d3.tip()
+    .attr('class', 'd3-tip d3-tip-distance')
+    .html(function(d) {
+      return d.made + '/' + (d.missed + d.made);
+    });
+
+  svg.call(tip);
+
+  var circles = g.selectAll('circle.dot').data(data);
+
+  circles.enter()
+    .append('circle')
+    .attr('class', 'dot')
+    .merge(circles)
+    .attr('cx', function(d) {
+      return xScale(d.distance)
+    })
+    .attr('cy', function(d) {
+      return yScale(d.pts_per_shot);
+    })
+    .attr('r', function(d) {
+      return rScale(d.made + d.missed);
+    })
+    .attr('fill', function(d) {
+      return colorScale(d.pts_per_shot);
+    })
+    .on('mouseover', function(d) {
+      (tip.show.bind(this))(d);
+      var rect = d3.select('.d3-tip-distance').node().getBoundingClientRect();
+      tip.style('top', (d3.event.pageY - rect.height - 10) + 'px')
+         .style('left', (d3.event.pageX - (rect.width / 2)) + 'px');
+    })
+    .on('mousemove', function(d) {
+      var rect = d3.select('.d3-tip-distance').node().getBoundingClientRect();
+      tip.style('top', (d3.event.pageY - rect.height - 10) + 'px')
+         .style('left', (d3.event.pageX - (rect.width / 2)) + 'px');
+    })
+    .on('mouseout', tip.hide);;
+
+  circles.exit().remove();
+}
+
+// Shooting section
+
 function getPlayerShotChart() {
-  $('#player').spin(true);
+  $('#player-viz-container').spin(true);
   $.getJSON('/players/' + gon.player_id + '/shot_chart_data/' + gon.season, function(data) {
-    $('#player').spin(false);
+    $('#player-viz-container').spin(false);
     makePlayerShotChart(d3.select('#player-viz'), data, 'player');
   });
 }
 
+function getDistanceChart() {
+  $('#distance-viz-container').spin(true);
+  $.getJSON('/players/' + gon.player_id + '/distance_chart_data/' + gon.season, function(data) {
+    $('#distance-viz-container').spin(false);
+    makeDistanceChart(d3.select('#distance-viz'), data);
+  });
+}
+
 function getTeamShotChart() {
-  $('#team').spin(true);
+  $('#team-viz-container').spin(true);
   $.getJSON('/players/' + gon.player_id + '/team_effect_shot_chart_data/' + gon.season, function(data) {
-    $('#team').spin(false);
+    $('#team-viz-container').spin(false);
     makeTeamEffectShotChart(d3.select('#team-viz'), data, 'team');
   });
 }
 
 function getOpposingTeamShotChart() {
-  $('#opposing-team').spin(true);
+  $('#opposing-team-viz-container').spin(true);
   $.getJSON('/players/' + gon.player_id + '/opposing_team_effect_shot_chart_data/' + gon.season, function(data) {
-    $('#opposing-team').spin(false);
+    $('#opposing-team-viz-container').spin(false);
     makeTeamEffectShotChart(d3.select('#opposing-team-viz'), data, 'opposing-team');
   });
 }
-
-$(document).on('turbolinks:load', function() {
-  $('#team-tab').one('click', getTeamShotChart);
-  $('#opposing-team-tab').one('click', getOpposingTeamShotChart);
-});

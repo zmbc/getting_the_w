@@ -39,6 +39,10 @@ module Scraper
           type = TYPE_CODES[json[TYPE_PROPERTY]]
           foul_type = FOUL_TYPE_CODES[json[FOUL_TYPE_PROPERTY]]
 
+          if type == :substitution && (!player_id || !extra_player_id)
+            puts json
+          end
+
           seconds_remaining = clock_to_seconds(json[CLOCK_PROPERTY])
           new(player_id: player_id,
               opposing_player_id: opposing_player_id,

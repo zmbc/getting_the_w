@@ -3,30 +3,49 @@
   %small.text-muted="#{@player.position_friendly}, #{@player.team.full_name}"
 
 %ul.pagination
-  %li
-    %a{href: "?season=#{@years.first}"} &laquo;
+  %li.page-item
+    %a.page-link{href: "?season=#{@years.first}"} &laquo;
   - @years.select{|x| (x - @season).abs <= 3}.each do |year|
-    %li{class: year == @season ? 'active' : ''}
-      %a{href: "?season=#{year}"}=year
-  %li
-    %a{href: "?season=#{@years.last}"} &raquo;
+    %li{class: year == @season ? 'page-item active' : 'page-item'}
+      %a.page-link{href: "?season=#{year}"}=year
+  %li.page-item
+    %a.page-link{href: "?season=#{@years.last}"} &raquo;
+
 .row
-  %ul.nav.nav-tabs
-    %li.active
-      %a#player-tab{href: "#player", 'data-toggle' => "tab"}Player
-    %li
-      %a#team-tab{href: "#team", 'data-toggle' => "tab"}Team
-    %li
-      %a#opposing-team-tab{href: "#opposing-team", 'data-toggle' => "tab"}Opposing Team
-  .tab-content
-    #player.tab-pane.fade.in.active
-      %svg#player-viz.col-xs-12.col-md-8.col-md-offset-2
-    #team.tab-pane.fade.in
-      %svg#team-viz.col-xs-12.col-md-8.col-md-offset-2
-    #opposing-team.tab-pane.fade.in
-      %svg#opposing-team-viz.col-xs-12.col-md-8.col-md-offset-2
+  .col-sm-12
+    %h2 Shooting
+  #player-viz-container.col-sm-12.col-md-6{style: 'min-height: 300px'}
+    %h4 Location
+    %svg#player-viz{style: 'width:100%'}
+  #distance-viz-container.col-sm-12.col-md-6{style: 'min-height: 300px'}
+    %h4 Distance
+    %svg#distance-viz{style:'width:100%'}
+  #gametime-viz-container.col-sm-12.col-md-6{style: 'min-height: 300px'}
+    %h4 Time of Game
+    %svg#gametime-viz{style:'width:100%'}
+  #over-season-viz-container.col-sm-12.col-md-6{style: 'min-height: 300px'}
+    %h4 Over Season
+    %svg#over-season-viz{style:'width:100%'}
+.row
+  .col-sm-12
+    %h2 Offensive Impact
+  #team-viz-container.col-sm-12.col-md-8{style: 'min-height: 300px'}
+    %svg#team-viz{style: 'width:100%'}
+.row
+  .col-sm-12
+    %h2 Defensive Impact
+  #opposing-team-viz-container.col-sm-12.col-md-8{style: 'min-height: 300px'}
+    %svg#opposing-team-viz{style: 'width:100%'}
 - content_for(:js) do
   :javascript
     $(document).on('turbolinks:load', function() {
+      // Shooting section
       getPlayerShotChart();
+      getDistanceChart();
+      //getGameTimeChart();
+      //getSeasonChart();
+      // Offense section
+      getTeamShotChart();
+      // Defense section
+      getOpposingTeamShotChart();
     });
