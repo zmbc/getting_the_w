@@ -40,6 +40,12 @@ class PlayersController < ApplicationController
     render json: @player.distance_distribution_and_accuracy(season)
   end
 
+  def game_time_chart_data
+    @player = Player.find params[:id].to_i
+    season = params[:season].to_i
+    render json: @player.game_time_distribution_and_accuracy(season)
+  end
+
   def team_effect_shot_chart_data
     @player = Player.find params[:id].to_i
     season = params[:season].to_i

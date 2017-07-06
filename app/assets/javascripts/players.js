@@ -141,33 +141,39 @@ function makePlayerShotChart(element, data, namespace) {
   }
 
   circles.enter()
-         .append('circle')
-         .attr('class', 'shot-chart-point')
-         .merge(circles)
-         .attr('cx', function(d) {
-           return d.x + 25;
-         })
-         .attr('cy', function(d) {
-           return 35 - d.y;
-         })
-         .attr('r', function(d) {
-           return sizeScale(+d.made + +d.missed);
-         })
-         .attr('fill', function(d) {
-           return colorScale(d.pts_per_shot);
-         })
-         .on('mouseover', function(d) {
-           (tip.show.bind(this))(d);
-           var rect = d3.select('.d3-tip-player').node().getBoundingClientRect();
-           tip.style('top', (d3.event.pageY - rect.height - 10) + 'px')
-              .style('left', (d3.event.pageX - (rect.width / 2)) + 'px');
-         })
-         .on('mousemove', function(d) {
-           var rect = d3.select('.d3-tip-player').node().getBoundingClientRect();
-           tip.style('top', (d3.event.pageY - rect.height - 10) + 'px')
-              .style('left', (d3.event.pageX - (rect.width / 2)) + 'px');
-         })
-         .on('mouseout', tip.hide);
+    .append('circle')
+    .attr('class', 'shot-chart-point')
+    .attr('r', 0)
+    .merge(circles)
+      .on('mouseover', function(d) {
+       (tip.show.bind(this))(d);
+       var rect = d3.select('.d3-tip-player').node().getBoundingClientRect();
+       tip.style('top', (d3.event.pageY - rect.height - 10) + 'px')
+          .style('left', (d3.event.pageX - (rect.width / 2)) + 'px');
+      })
+      .on('mousemove', function(d) {
+        var rect = d3.select('.d3-tip-player').node().getBoundingClientRect();
+        tip.style('top', (d3.event.pageY - rect.height - 10) + 'px')
+          .style('left', (d3.event.pageX - (rect.width / 2)) + 'px');
+      })
+      .on('mouseout', tip.hide)
+      .attr('cx', function(d) {
+        return d.x + 25;
+      })
+      .attr('cy', function(d) {
+        return 35 - d.y;
+      })
+      .attr('fill', function(d) {
+        return colorScale(d.pts_per_shot);
+      })
+      .transition()
+        .duration(750)
+        .delay(function(d) {
+          return d.x * 15;
+        })
+        .attr('r', function(d) {
+          return sizeScale(+d.made + +d.missed);
+        });
 
   circles.exit().remove();
 }
@@ -295,7 +301,7 @@ function makeTeamEffectShotChart(element, data, namespace) {
   dashedRings.exit().remove();
 }
 
-function makeDistanceChart(svg, data) {
+function makeBubbleChart(svg, namespace, data, opts) {
   var width = 500;
   var height = 450;
   var margin = {
@@ -317,13 +323,15 @@ function makeDistanceChart(svg, data) {
              .attr('height', chartHeight)
              .attr('width', chartWidth);
 
+  var xDomain = [-1, d3.max(data, function(d) { return d[opts.x]; }) + 2];
+
   var xScale = d3.scaleLinear()
-    .range([chartWidth, 0])
-    .domain([-1, d3.max(data, function(d) { return d.distance; }) + 2]);
+    .range([0, chartWidth])
+    .domain(opts.xFlipped ? xDomain.reverse() : xDomain);
 
   var yScale = d3.scaleLinear()
       .range([chartHeight, 0])
-      .domain([-0.1, d3.max(data, function(d) { return d.pts_per_shot; }) + 0.1]);
+      .domain([-0.1, d3.max(data, function(d) { return d[opts.y]; }) + 0.1]);
 
   var rScale = d3.scaleLinear()
       .domain([0, d3.max(data, function(d) { return d.made + d.missed; })])
@@ -338,9 +346,7 @@ function makeDistanceChart(svg, data) {
       .call(
         d3.axisBottom(xScale)
           .ticks(5)
-          .tickFormat(function(d) {
-            return Math.round(d) + 'ft';
-          })
+          .tickFormat(opts.tickFormat)
       );
 
   svg.append("g")
@@ -348,22 +354,22 @@ function makeDistanceChart(svg, data) {
       .append("text")
         .attr('transform', 'rotate(-90)')
         .attr("text-anchor", "middle")
-        .text('Points Per Shot');
+        .text(opts.yAxis);
 
   svg.append("g")
       .attr("transform", "translate(" + (margin.left + (chartWidth / 2)) + "," + (chartHeight + margin.top + 30) + ")")
       .append("text")
         .attr("text-anchor", "middle")
-        .text('Distance');
+        .text(opts.xAxis);
 
   svg.append("g")
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
       .call(d3.axisLeft(yScale).ticks(5));
 
-  d3.select(".d3-tip-distance").remove();
+  d3.select(".d3-tip-" + namespace).remove();
 
   var tip = d3.tip()
-    .attr('class', 'd3-tip d3-tip-distance')
+    .attr('class', 'd3-tip d3-tip-' + namespace)
     .html(function(d) {
       return d.made + '/' + (d.missed + d.made);
     });
@@ -375,31 +381,36 @@ function makeDistanceChart(svg, data) {
   circles.enter()
     .append('circle')
     .attr('class', 'dot')
+    .attr('cy', yScale(0))
+    .attr('r', 0)
+    .attr('fill', colorScale(0))
     .merge(circles)
     .attr('cx', function(d) {
-      return xScale(d.distance)
-    })
-    .attr('cy', function(d) {
-      return yScale(d.pts_per_shot);
-    })
-    .attr('r', function(d) {
-      return rScale(d.made + d.missed);
-    })
-    .attr('fill', function(d) {
-      return colorScale(d.pts_per_shot);
+      return xScale(d[opts.x])
     })
     .on('mouseover', function(d) {
       (tip.show.bind(this))(d);
-      var rect = d3.select('.d3-tip-distance').node().getBoundingClientRect();
+      var rect = d3.select('.d3-tip-' + namespace).node().getBoundingClientRect();
       tip.style('top', (d3.event.pageY - rect.height - 10) + 'px')
          .style('left', (d3.event.pageX - (rect.width / 2)) + 'px');
     })
     .on('mousemove', function(d) {
-      var rect = d3.select('.d3-tip-distance').node().getBoundingClientRect();
+      var rect = d3.select('.d3-tip-' + namespace).node().getBoundingClientRect();
       tip.style('top', (d3.event.pageY - rect.height - 10) + 'px')
          .style('left', (d3.event.pageX - (rect.width / 2)) + 'px');
     })
-    .on('mouseout', tip.hide);;
+    .on('mouseout', tip.hide)
+    .transition()
+      .duration(750)
+      .attr('cy', function(d) {
+        return yScale(d[opts.y]);
+      })
+      .attr('r', function(d) {
+        return rScale(d.made + d.missed);
+      })
+      .attr('fill', function(d) {
+        return colorScale(d.pts_per_shot);
+      });
 
   circles.exit().remove();
 }
@@ -418,7 +429,37 @@ function getDistanceChart() {
   $('#distance-viz-container').spin(true);
   $.getJSON('/players/' + gon.player_id + '/distance_chart_data/' + gon.season, function(data) {
     $('#distance-viz-container').spin(false);
-    makeDistanceChart(d3.select('#distance-viz'), data);
+    // We don't want to mess up our x axis with halfcourt heaves
+    data = data.filter(function(d) {
+      return d.distance <= 40;
+    });
+    makeBubbleChart(d3.select('#distance-viz'), 'distance', data, {
+      x: 'distance',
+      xAxis: 'Distance',
+      xFlipped: true,
+      y: 'pts_per_shot',
+      yAxis: 'Points Per Shot',
+      tickFormat: function(d) {
+        return Math.round(d) + 'ft';
+      }
+    });
+  });
+}
+
+function getGameTimeChart() {
+  $('#gametime-viz-container').spin(true);
+  $.getJSON('/players/' + gon.player_id + '/game_time_chart_data/' + gon.season, function(data) {
+    $('#gametime-viz-container').spin(false);
+    makeBubbleChart(d3.select('#gametime-viz'), 'gametime', data, {
+      x: 'minutes',
+      xAxis: 'Minutes into Game',
+      xFlipped: false,
+      y: 'pts_per_shot',
+      yAxis: 'Points Per Shot',
+      tickFormat: function(d) {
+        return Math.round(d) + ':00';
+      }
+    });
   });
 }
 
