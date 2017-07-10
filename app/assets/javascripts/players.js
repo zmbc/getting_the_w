@@ -734,9 +734,9 @@ function setUpSummaryStats() {
 
   var offensiveDelta = parseFloat(d3.select('#offensive-delta').text(), 10);
   d3.select('#offensive-delta')
-    .style('color', offensiveDelta < 0 ? 'red' : 'green');
+    .style('color', offensiveDelta < 0 ? '#ff4136' : '#28b62c');
 
   var defensiveDelta = parseFloat(d3.select('#defensive-delta').text(), 10);
   d3.select('#defensive-delta')
-    .style('color', defensiveDelta < 0 ? 'green' : 'red');
+    .style('color', defensiveDelta < 0 ? '#28b62c' : '#ff4136');
 }

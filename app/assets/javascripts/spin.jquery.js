@@ -27,14 +27,14 @@
     if (data.spinner) {
       data.spinner.stop();
       delete data.spinner;
-      $("#spinner_modal").remove();
+      container.find(".spinner_modal").remove();
       return this;
     }
 
     if (spin) {
       container.css('position', 'relative');
-      container.append('<div id="spinner_modal" style="background-color: rgba(0, 0, 0, 0.1); width:100%; height:100%; position:absolute; top:0px; left:0px; z-index:' + (opts.zIndex - 1) + '"/>');
-      var spinner = $('#spinner_modal')[0];
+      container.append('<div class="spinner_modal" style="background-color: rgba(0, 0, 0, 0.1); width:100%; height:100%; position:absolute; top:0px; left:0px; z-index:' + (opts.zIndex - 1) + '"/>');
+      var spinner = container.find('.spinner_modal')[0];
       data.spinner = new Spinner($.extend({
         color: container.css('color')
       }, opts)).spin(spinner);
