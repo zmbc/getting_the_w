@@ -1,3 +1,5 @@
+require 'irb'
+
 module Scraper
   module API
     module PlayByPlay
@@ -13,7 +15,7 @@ module Scraper
         LOC_Y_PROPERTY = 'locY'.freeze
         CLOCK_PROPERTY = 'cl'.freeze
         THREE_PROPERTY = 'opt1'.freeze
-        THREE_TRUE = 1
+        THREE_TRUE = 3
 
         TYPE_CODES = {
           1 => :made_shot,
@@ -44,6 +46,7 @@ module Scraper
           end
 
           seconds_remaining = clock_to_seconds(json[CLOCK_PROPERTY])
+          binding.irb
           new(player_id: player_id,
               opposing_player_id: opposing_player_id,
               extra_player_id: extra_player_id,
