@@ -699,20 +699,20 @@ function callWhenScrolledTo(callback, elem) {
   }
 }
 
-function setUpSummaryStats(pps, offensiveDelta, defensiveDelta) {
+function setUpSummaryStats() {
   var colorScale = d3.scaleLinear()
                      .domain([0.5, 0.944, 1.2])
                      .range(['#5458A2', '#FADC97', '#B02B48']);
 
+  var pps = parseFloat(d3.select('#pps').text(), 10);
   d3.select('#pps')
-    .text(pps.toFixed(2))
     .style('color', colorScale(pps));
 
+  var offensiveDelta = parseFloat(d3.select('#offensive-delta').text(), 10);
   d3.select('#offensive-delta')
-    .text((offensiveDelta * 100).toFixed(1))
     .style('color', offensiveDelta < 0 ? 'red' : 'green');
 
+  var defensiveDelta = parseFloat(d3.select('#defensive-delta').text(), 10);
   d3.select('#defensive-delta')
-    .text((defensiveDelta * 100).toFixed(1))
     .style('color', defensiveDelta < 0 ? 'green' : 'red');
 }

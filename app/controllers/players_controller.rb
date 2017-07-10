@@ -26,7 +26,7 @@ class PlayersController < ApplicationController
     gon.player_id = @player.id
     @season = params[:season].blank? ? Time.now.year : params[:season].to_i
     gon.season = @season
-    gon.summary_stats = @player.summary_stats(@season)
+    @summary_stats = @player.summary_stats(@season)
   end
 
   def shot_chart_data

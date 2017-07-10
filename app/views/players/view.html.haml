@@ -13,15 +13,15 @@
 
 .row
   .col-xs-4.number-container
-    .number#pps
+    .number#pps=@summary_stats[:pps].round(2)
     .number-label
       points per shot
   .col-xs-4.number-container
-    .number#offensive-delta
+    .number#offensive-delta=(@summary_stats[:offensive_delta] * 100).round(1)
     .number-label
       offensive impact (points per 100 shots)
   .col-xs-4.number-container
-    .number#defensive-delta
+    .number#defensive-delta=(@summary_stats[:defensive_delta] * 100).round(1)
     .number-label
       defensive impact (points per 100 shots)
 
@@ -76,5 +76,5 @@
       // Defense section
       callWhenScrolledTo(getOpposingTeamCharts, $('#opposing-team-viz-container'));
 
-      setUpSummaryStats(gon.summary_stats.pps, gon.summary_stats.offensive_delta, gon.summary_stats.defensive_delta);
+      setUpSummaryStats();
     });
