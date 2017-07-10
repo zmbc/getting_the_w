@@ -8,6 +8,8 @@ Rails.application.routes.draw do
       to: 'players#distance_chart_data'
   get '/players/:id/game_time_chart_data/:season',
       to: 'players#game_time_chart_data'
+  get '/players/:id/over_season_chart_data/:season',
+      to: 'players#over_season_chart_data'
   get '/players/:id/team_effect_shot_chart_data/:season',
       to: 'players#team_effect_shot_chart_data'
   get '/players/:id/opposing_team_effect_shot_chart_data/:season',

@@ -12,46 +12,69 @@
     %a.page-link{href: "?season=#{@years.last}"} &raquo;
 
 .row
+  .col-xs-4.number-container
+    .number#pps
+    .number-label
+      points per shot
+  .col-xs-4.number-container
+    .number#offensive-delta
+    .number-label
+      offensive impact (points per 100 shots)
+  .col-xs-4.number-container
+    .number#defensive-delta
+    .number-label
+      defensive impact (points per 100 shots)
+
+.row
   .col-sm-12
     %h2 Shooting
   #player-viz-container.col-sm-12.col-md-6{style: 'min-height: 300px'}
-    %h4 Location
     %svg#player-viz{style: 'width:100%'}
   #distance-viz-container.col-sm-12.col-md-6{style: 'min-height: 300px'}
-    %h4 Distance
     %svg#distance-viz{style:'width:100%;height:100%'}
   #gametime-viz-container.col-sm-12.col-md-6{style: 'min-height: 300px'}
-    %h4 Time of Game
-    %svg#gametime-viz{style:'width:100%;height:100%'}
+    %svg#gametime-viz{style:'width:100%'}
   #over-season-viz-container.col-sm-12.col-md-6{style: 'min-height: 300px'}
-    %h4 Over Season
-    %svg#over-season-viz{style:'width:100%;height:100%'}
+    %svg#over-season-viz{style:'width:100%'}
 .row
   .col-sm-12
     %h2 Offensive Impact
-  #team-viz-container.col-sm-12.col-md-8{style: 'min-height: 300px'}
-    %svg#team-viz{style: 'width:100%'}
+  #team-viz-container{style: 'min-height: 600px'}
+    .col-sm-12.col-md-8.col-md-offset-2{style: 'position:relative'}
+      %h3.text-center Overall
+      %svg#team-overall-impact-viz{style: 'width: 100%'}
+    .col-sm-12.col-md-6{style: 'position:relative'}
+      %h3.text-center Accuracy
+      %svg#team-accuracy-impact-viz{style: 'width: 100%'}
+    .col-sm-12.col-md-6{style: 'position:relative'}
+      %h3.text-center Shot Selection
+      %svg#team-selection-impact-viz{style: 'width: 100%'}
 .row
   .col-sm-12
     %h2 Defensive Impact
-  #opposing-team-viz-container.col-sm-12.col-md-8{style: 'min-height: 300px'}
-    %svg#opposing-team-viz{style: 'width:100%'}
+  #opposing-team-viz-container{style: 'min-height: 600px'}
+    .col-sm-12.col-md-8.col-md-offset-2{style: 'position:relative'}
+      %h3.text-center Overall
+      %svg#opposing-team-overall-impact-viz{style: 'width: 100%'}
+    .col-sm-12.col-md-6{style: 'position:relative'}
+      %h3.text-center Accuracy
+      %svg#opposing-team-accuracy-impact-viz{style: 'width: 100%'}
+    .col-sm-12.col-md-6{style: 'position:relative'}
+      %h3.text-center Shot Selection
+      %svg#opposing-team-selection-impact-viz{style: 'width: 100%'}
 - content_for(:js) do
   :javascript
     $(document).on('turbolinks:load', function() {
+      $(window).unbind('scroll');
       // Shooting section
-      getPlayerShotChart();
-      getDistanceChart();
-      var already = false;
-      $(window).scroll(function() {
-        if (!already && $('#gametime-viz').visible(false, false, 'vertical')) {
-          getGameTimeChart();
-          already = true;
-        }
-      });
-      //getSeasonChart();
+      callWhenScrolledTo(getPlayerShotChart, $('#player-viz'));
+      callWhenScrolledTo(getDistanceChart, $('#distance-viz'));
+      callWhenScrolledTo(getGameTimeChart, $('#gametime-viz'));
+      callWhenScrolledTo(getSeasonChart, $('#over-season-viz'));
       // Offense section
-      getTeamShotChart();
+      callWhenScrolledTo(getTeamCharts, $('#team-viz-container'));
       // Defense section
-      getOpposingTeamShotChart();
+      callWhenScrolledTo(getOpposingTeamCharts, $('#opposing-team-viz-container'));
+
+      setUpSummaryStats(gon.summary_stats.pps, gon.summary_stats.offensive_delta, gon.summary_stats.defensive_delta);
     });

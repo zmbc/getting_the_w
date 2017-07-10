@@ -13,6 +13,7 @@
     <!-- D3 and libraries -->
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-tip/0.7.1/d3-tip.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.24.0/d3-legend.js"></script>
     <!-- jQuery -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-visible/1.2.0/jquery.visible.min.js"></script>
@@ -50,6 +51,9 @@
     </nav>
     <div class="container">
       <%= yield %>
+    </div>
+    <footer class="footer">
+      Built by <a href="http://zebburkeconte.com">Zeb Burke-Conte</a>
     </div>
     <%= yield(:js) %>
   </body>

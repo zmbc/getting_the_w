@@ -18,9 +18,9 @@ function appendArcPath(base, radius, startAngle, endAngle) {
           .attr("d", line);
 }
 
-function drawCourt(base, width) {
+function drawCourt(base, width, opts) {
       var courtWidth = 50,
-          visibleCourtLength = 40,
+          visibleCourtLength = opts.visibleCourtLength || 40,
           keyWidth = 16,
           threePointRadius = 22.1458,
           threePointSideRadius = 22,
@@ -124,6 +124,20 @@ function makePlayerShotChart(element, data, namespace) {
                      .domain([0, 0.944, 3])
                      .range(['#5458A2', '#FADC97', '#B02B48']);
 
+  var colorLegend = d3.legendColor()
+    .scale(colorScale)
+    .shape('circle')
+    .shapeRadius(0.5)
+    .shapePadding(0.5)
+    .cells([0, 0.944, 3])
+    .labels(['ice cold', 'league average', 'on fire']);
+
+  svg.append('g')
+    .attr("transform", "translate(0.75, 0.75)")
+    .call(colorLegend);
+
+  svg.selectAll('.legendCells .label').attr('transform', 'translate(1, 0.3)');
+
   var circles = svg.selectAll('circle.shot-chart-point').data(data);
 
   d3.select(".d3-tip-" + namespace).remove();
@@ -137,7 +151,7 @@ function makePlayerShotChart(element, data, namespace) {
   svg.call(tip);
 
   if (svg.select('.shot-chart-court').empty()) {
-    drawCourt(svg, width);
+    drawCourt(svg, width, {});
   }
 
   circles.enter()
@@ -178,88 +192,66 @@ function makePlayerShotChart(element, data, namespace) {
   circles.exit().remove();
 }
 
-function makeTeamEffectShotChart(element, data, namespace) {
+function makeOverallTeamEffectShotChart(element, data, namespace, opts) {
   var width = 500;
   var height = 500;
   var svg = element;
 
-  // NB: 1 and -1 are the theoretical max and min, but they will NEVER
-  // occur except for in statistical noise. I arbitrarily chose 0.05 and -0.05 as
+  // NB: 3 and -3 are the theoretical max and min, but they will NEVER
+  // occur except for in statistical noise. I arbitrarily chose 0.3 and -0.3 as
   // a reasonable expectation for highest actual player impact.
   var sizeScale = d3.scaleLinear()
-                    .domain([-1, -0.05, 0, 0.05, 1])
-                    .range([0, 0, 2, 4, 4]);
+                    .domain([-3, -0.3, 0, 0.3, 3])
+                    .range([5, 5, 0, 5, 5]);
 
-  // NB: 3 and -3 are the theoretical max and min, but they will almost never
-  // occur except for in statistical noise. I arbitrarily chose 1.5 and -1.5 as
-  // a reasonable expectation for highest actual player impact.
-  var colorScale = d3.scaleLinear()
-                     .domain([-3, -1.5, 0, 1.5, 3])
-                     .range(['#5458A2', '#5458A2', '#FADC97', '#B02B48', '#B02B48']);
-
-  var impacts = data.map(function(d) {
-    return Math.abs((d.on_court.frequency * d.on_court.pts_per_shot) - (d.off_court.frequency * d.off_court.pts_per_shot));
+  data.forEach(function(d) {
+    d.impact = (d.on_court.frequency * d.on_court.pts_per_shot) - (d.off_court.frequency * d.off_court.pts_per_shot);
   });
 
-  var opacityScale = d3.scaleLinear()
-                       .domain(d3.extent(impacts))
-                       .range([0.35, 1]);
+  var circles = svg.selectAll('circle').data(data);
 
-  var rings = svg.selectAll('path.ring').data(data);
-  var dashedRings = svg.selectAll('path.dashed-ring').data(data);
+  var colorScaleDummy = d3.scaleOrdinal().domain([0, 1]).range(['#ff4136', '#28b62c'])
+
+  var colorLegend = d3.legendColor()
+    .scale(colorScaleDummy)
+    .shape('circle')
+    .shapeRadius(0.5)
+    .shapePadding(0.5)
+    .cells([0, 1])
+    .labels(['worse when on court', 'better when on court']);
+
+  svg.append('g')
+    .attr("transform", "translate(0.75, 0.75)")
+    .call(colorLegend);
+
+  svg.selectAll('.legendCells .label').attr('transform', 'translate(1, 0.3)');
 
   d3.select(".d3-tip-" + namespace).remove();
 
   var tip = d3.tip()
     .attr('class', 'd3-tip d3-tip-' + namespace)
     .html(function(d) {
-      return 'On Court: ' + (d.on_court.frequency * 100).toFixed(1) + '% of shots, ' + (((d.on_court.made / (d.on_court.missed + d.on_court.made)) || 0) * 100).toFixed(1) + '% made<br>' +
-             'Off Court: ' + (d.off_court.frequency * 100).toFixed(1) + '% of shots, ' + (((d.off_court.made / (d.off_court.missed + d.off_court.made)) || 0) * 100).toFixed(1) + '% made';
+      return 'On Court: ' + (d.on_court.frequency * d.on_court.pts_per_shot * 100).toFixed(1) + ' points per 100 shots<br>' +
+             'Off Court: ' + (d.off_court.frequency * d.off_court.pts_per_shot * 100).toFixed(1) + ' points per 100 shots';
     });
 
   svg.call(tip);
 
   if (svg.select('.shot-chart-court').empty()) {
-    drawCourt(svg, width);
+    drawCourt(svg, width, {visibleCourtLength: 35});
   }
 
-  var arc = d3.arc()
-    .startAngle(0)
-    .endAngle(Math.PI * 2);
-
-  var dashedArc = d3.arc()
-    .startAngle(0)
-    .endAngle(Math.PI * 2);
-
-  rings.enter()
-         .append('path')
-         .attr('class', 'ring')
-         .merge(rings)
-         .each(function(d) {
-           if (d.frequency_delta > 0) {
-             d.innerRadius = sizeScale(0);
-             d.outerRadius = sizeScale(d.frequency_delta);
-           } else {
-             d.outerRadius = sizeScale(0);
-             d.innerRadius = sizeScale(d.frequency_delta);
-             if (d.innerRadius === 0) {
-               d.innerRadius = 0.2;
-             }
-           }
-         })
+  circles.enter()
+         .append('circle')
+         .merge(circles)
          .attr('transform', function(d) {
-           return 'translate(' + (d.x + 25) + ', ' + (35 - d.y) + ')';
+           return 'translate(' + (d.x + 25) + ', ' + (30 - d.y) + ')';
          })
-         .attr('d', arc)
+         .attr('r', function(d) {
+           return sizeScale(d.impact);
+         })
          .attr('fill', function(d) {
-           return colorScale(d.pps_delta);
-         })
-         .attr('stroke', function(d) {
-           return colorScale(d.pps_delta);
-         })
-         .attr('opacity', function(d) {
-           var impact = Math.abs((d.on_court.frequency * d.on_court.pts_per_shot) - (d.off_court.frequency * d.off_court.pts_per_shot));
-           return opacityScale(impact);
+           return d.impact > 0 === opts.higherIsBetter ? '#28b62c' : '#ff4136';
          })
          .on('mouseover', function(d) {
            (tip.show.bind(this))(d);
@@ -278,27 +270,167 @@ function makeTeamEffectShotChart(element, data, namespace) {
          })
          .on('mouseout', tip.hide);
 
-  rings.exit().remove();
+  circles.exit().remove();
+}
 
-  dashedRings.enter()
-    .append('path')
-    .attr('class', 'dashed-ring')
-    .merge(dashedRings)
-    .each(function(d) {
-      if (d.frequency_delta > 0) {
-        d.innerRadius = sizeScale(0) - 0.08;
-        d.outerRadius = sizeScale(0) - 0.08;
-      } else {
-        d.innerRadius = sizeScale(0) + 0.08;
-        d.outerRadius = sizeScale(0) + 0.08;
-      }
-    })
-    .attr('transform', function(d) {
-      return 'translate(' + (d.x + 25) + ', ' + (35 - d.y) + ')';
-    })
-    .attr('d', dashedArc);
+function makeTeamAccuracyEffectShotChart(svg, namespace, data) {
+  var width = 500;
+  var height = 500;
 
-  dashedRings.exit().remove();
+  var sizeScale = d3.scaleLinear()
+                    .domain([0, d3.max(data,
+                      function(d) {
+                        return (d.on_court.frequency + d.off_court.frequency / 2);
+                      }
+                    )])
+                    .range([0, 1.75]);
+
+  var colorScale = d3.scaleLinear()
+    .domain([-3, -1, 0, 1, 3])
+    .range(['#5458A2', '#5458A2', '#FADC97', '#B02B48', '#B02B48']);
+
+  var colorLegend = d3.legendColor()
+    .scale(colorScale)
+    .shape('circle')
+    .shapeRadius(0.5)
+    .shapePadding(0.5)
+    .cells([-1, 0, 1])
+    .labels(['make less when on court', 'no effect', 'make more when on court']);
+
+  svg.append('g')
+    .attr("transform", "translate(0.75, 0.75)")
+    .call(colorLegend);
+
+  svg.selectAll('.legendCells .label').attr('transform', 'translate(1, 0.3)');
+
+  var circles = svg.selectAll('circle.shot-chart-point').data(data);
+
+  d3.select(".d3-tip-" + namespace).remove();
+
+  var tip = d3.tip()
+    .attr('class', 'd3-tip d3-tip-' + namespace)
+    .html(function(d) {
+      return 'On Court: ' + d.on_court.pts_per_shot.toFixed(2) + ' PPS<br>' + 'Off Court: ' + d.off_court.pts_per_shot.toFixed(2) + ' PPS';
+    });
+
+  svg.call(tip);
+
+  if (svg.select('.shot-chart-court').empty()) {
+    drawCourt(svg, width, {visibleCourtLength: 35});
+  }
+
+  circles.enter()
+    .append('circle')
+    .attr('class', 'shot-chart-point')
+    .attr('r', 0)
+    .merge(circles)
+      .on('mouseover', function(d) {
+       (tip.show.bind(this))(d);
+       var rect = d3.select('.d3-tip-' + namespace).node().getBoundingClientRect();
+       tip.style('top', (d3.event.pageY - rect.height - 10) + 'px')
+          .style('left', (d3.event.pageX - (rect.width / 2)) + 'px');
+      })
+      .on('mousemove', function(d) {
+        var rect = d3.select('.d3-tip-' + namespace).node().getBoundingClientRect();
+        tip.style('top', (d3.event.pageY - rect.height - 10) + 'px')
+          .style('left', (d3.event.pageX - (rect.width / 2)) + 'px');
+      })
+      .on('mouseout', tip.hide)
+      .attr('cx', function(d) {
+        return d.x + 25;
+      })
+      .attr('cy', function(d) {
+        return 30 - d.y;
+      })
+      .attr('fill', function(d) {
+        return colorScale(d.pps_delta);
+      })
+      .transition()
+        .duration(750)
+        .delay(function(d) {
+          return d.x * 15;
+        })
+        .attr('r', function(d) {
+          return sizeScale(d.on_court.frequency + d.off_court.frequency / 2);
+        });
+
+  circles.exit().remove();
+}
+
+function makeTeamSelectionEffectShotChart(svg, namespace, data) {
+  var width = 500;
+  var height = 500;
+
+  // NB: 3 and -3 are the theoretical max and min, but they will NEVER
+  // occur except for in statistical noise. I arbitrarily chose 0.3 and -0.3 as
+  // a reasonable expectation for highest actual player impact.
+  var sizeScale = d3.scaleLinear()
+                    .domain([-1, -0.2, 0, 0.2, 1])
+                    .range([5, 5, 0, 5, 5]);
+
+  var circles = svg.selectAll('circle').data(data);
+
+  var colorScaleDummy = d3.scaleOrdinal().domain([0, 1]).range(['#75caeb', '#ff851b']);
+
+  var colorLegend = d3.legendColor()
+    .scale(colorScaleDummy)
+    .shape('circle')
+    .shapeRadius(0.5)
+    .shapePadding(0.5)
+    .cells([0, 1])
+    .labels(['less shots when on court', 'more shots when on court']);
+
+  svg.append('g')
+    .attr("transform", "translate(0.75, 0.75)")
+    .call(colorLegend);
+
+  svg.selectAll('.legendCells .label').attr('transform', 'translate(1, 0.3)');
+
+  d3.select(".d3-tip-" + namespace).remove();
+
+  var tip = d3.tip()
+    .attr('class', 'd3-tip d3-tip-' + namespace)
+    .html(function(d) {
+      return 'On Court: ' + (d.on_court.frequency * 100).toFixed(1) + '% of shots<br>' +
+             'Off Court: ' + (d.off_court.frequency * 100).toFixed(1) + '% of shots';
+    });
+
+  svg.call(tip);
+
+  if (svg.select('.shot-chart-court').empty()) {
+    drawCourt(svg, width, {visibleCourtLength: 35});
+  }
+
+  circles.enter()
+         .append('circle')
+         .merge(circles)
+         .attr('transform', function(d) {
+           return 'translate(' + (d.x + 25) + ', ' + (30 - d.y) + ')';
+         })
+         .attr('r', function(d) {
+           return sizeScale(d.frequency_delta);
+         })
+         .attr('fill', function(d) {
+           return d.frequency_delta > 0 ? '#ff851b' : '#75caeb';
+         })
+         .on('mouseover', function(d) {
+           (tip.show.bind(this))(d);
+           var y = d3.event.pageY;
+           var x = d3.event.pageX;
+           var rect = d3.select('.d3-tip-' + namespace).node().getBoundingClientRect();
+           tip.style('top', (y - rect.height - 10) + 'px')
+              .style('left', (x - (rect.width / 2)) + 'px');
+         })
+         .on('mousemove', function(d) {
+           var y = d3.event.pageY;
+           var x = d3.event.pageX;
+           var rect = d3.select('.d3-tip-' + namespace).node().getBoundingClientRect();
+           tip.style('top', (y - rect.height - 10) + 'px')
+              .style('left', (x - (rect.width / 2)) + 'px');
+         })
+         .on('mouseout', tip.hide);
+
+  circles.exit().remove();
 }
 
 function makeBubbleChart(svg, namespace, data, opts) {
@@ -323,7 +455,16 @@ function makeBubbleChart(svg, namespace, data, opts) {
              .attr('height', chartHeight)
              .attr('width', chartWidth);
 
-  var xDomain = [-1, d3.max(data, function(d) { return d[opts.x]; }) + 2];
+  var xDomain;
+
+  if (opts.xAbsolute) {
+    xDomain = [opts.xMinValue, d3.max(data, function(d) { return d[opts.x]; }) + opts.xTopMargin];
+  } else {
+    xDomain = [
+      d3.min(data, function(d) { return d[opts.x]; }) - opts.xBottomMargin,
+      d3.max(data, function(d) { return d[opts.x]; }) + opts.xTopMargin
+    ]
+  }
 
   var xScale = d3.scaleLinear()
     .range([0, chartWidth])
@@ -437,6 +578,9 @@ function getDistanceChart() {
       x: 'distance',
       xAxis: 'Distance',
       xFlipped: true,
+      xAbsolute: true,
+      xMinValue: -1,
+      xTopMargin: 2,
       y: 'pts_per_shot',
       yAxis: 'Points Per Shot',
       tickFormat: function(d) {
@@ -454,6 +598,9 @@ function getGameTimeChart() {
       x: 'minutes',
       xAxis: 'Minutes into Game',
       xFlipped: false,
+      xAbsolute: true,
+      xMinValue: -2,
+      xTopMargin: 2,
       y: 'pts_per_shot',
       yAxis: 'Points Per Shot',
       tickFormat: function(d) {
@@ -463,18 +610,109 @@ function getGameTimeChart() {
   });
 }
 
-function getTeamShotChart() {
-  $('#team-viz-container').spin(true);
-  $.getJSON('/players/' + gon.player_id + '/team_effect_shot_chart_data/' + gon.season, function(data) {
-    $('#team-viz-container').spin(false);
-    makeTeamEffectShotChart(d3.select('#team-viz'), data, 'team');
+function getSeasonChart() {
+  $('#over-season-viz-container').spin(true);
+  $.getJSON('/players/' + gon.player_id + '/over_season_chart_data/' + gon.season, function(data) {
+    data.forEach(function(x) {
+      x.date = new Date(x.date).valueOf();
+    });
+    $('#over-season-viz-container').spin(false);
+    makeBubbleChart(d3.select('#over-season-viz'), 'over-season', data, {
+      x: 'date',
+      xAxis: 'Date',
+      xFlipped: false,
+      xAbsolute: false,
+      // Five days
+      xBottomMargin: 86400000 * 5,
+      xTopMargin: 86400000 * 5,
+      y: 'pts_per_shot',
+      yAxis: 'Points Per Shot',
+      tickFormat: function(d) {
+        return d3.timeFormat('%b %e')(new Date(d));
+      }
+    });
   });
 }
 
-function getOpposingTeamShotChart() {
+function getTeamCharts() {
+  $('#team-viz-container').spin(true);
+  $.getJSON('/players/' + gon.player_id + '/team_effect_shot_chart_data/' + gon.season, function(data) {
+    $('#team-viz-container').spin(false);
+    makeOverallTeamEffectShotChart(
+      d3.select('#team-overall-impact-viz'),
+      data,
+      'team-overall-impact',
+      {
+        higherIsBetter: true
+      }
+    );
+    makeTeamAccuracyEffectShotChart(
+      d3.select('#team-accuracy-impact-viz'),
+      'team-accuracy-impact',
+      data
+    );
+    makeTeamSelectionEffectShotChart(
+      d3.select('#team-selection-impact-viz'),
+      'team-selection-impact',
+      data
+    );
+  });
+}
+
+function getOpposingTeamCharts() {
   $('#opposing-team-viz-container').spin(true);
   $.getJSON('/players/' + gon.player_id + '/opposing_team_effect_shot_chart_data/' + gon.season, function(data) {
     $('#opposing-team-viz-container').spin(false);
-    makeTeamEffectShotChart(d3.select('#opposing-team-viz'), data, 'opposing-team');
+    makeOverallTeamEffectShotChart(
+      d3.select('#opposing-team-overall-impact-viz'),
+      data,
+      'opposing-team-overall-impact',
+      {
+        higherIsBetter: false
+      }
+    );
+    makeTeamAccuracyEffectShotChart(
+      d3.select('#opposing-team-accuracy-impact-viz'),
+      'opposing-team-accuracy-impact',
+      data
+    );
+    makeTeamSelectionEffectShotChart(
+      d3.select('#opposing-team-selection-impact-viz'),
+      'opposing-team-selection-impact',
+      data
+    );
   });
+}
+
+function callWhenScrolledTo(callback, elem) {
+  var already = false;
+  $(window).scroll(checkUpdate);
+  $(window).resize(checkUpdate);
+  checkUpdate();
+
+  function checkUpdate() {
+    if (elem.visible(true, false, 'vertical')) {
+      callback();
+      $(window).unbind('scroll', checkUpdate);
+      $(window).unbind('resize', checkUpdate);
+    }
+  }
+}
+
+function setUpSummaryStats(pps, offensiveDelta, defensiveDelta) {
+  var colorScale = d3.scaleLinear()
+                     .domain([0.5, 0.944, 1.2])
+                     .range(['#5458A2', '#FADC97', '#B02B48']);
+
+  d3.select('#pps')
+    .text(pps.toFixed(2))
+    .style('color', colorScale(pps));
+
+  d3.select('#offensive-delta')
+    .text((offensiveDelta * 100).toFixed(1))
+    .style('color', offensiveDelta < 0 ? 'red' : 'green');
+
+  d3.select('#defensive-delta')
+    .text((defensiveDelta * 100).toFixed(1))
+    .style('color', defensiveDelta < 0 ? 'green' : 'red');
 }
