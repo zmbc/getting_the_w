@@ -1,5 +1,3 @@
-require 'irb'
-
 module Scraper
   module API
     module PlayByPlay
@@ -46,7 +44,6 @@ module Scraper
           end
 
           seconds_remaining = clock_to_seconds(json[CLOCK_PROPERTY])
-          binding.irb
           new(player_id: player_id,
               opposing_player_id: opposing_player_id,
               extra_player_id: extra_player_id,
