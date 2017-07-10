@@ -13,7 +13,6 @@ module Scraper
         def self.get(game, period_num)
           uri = URI("http://data.wnba.com/data/v2015/json/mobile_teams/wnba/#{game.season}/scores/pbp/#{game.id}_#{period_num}_pbp.json")
           res = Net::HTTP.get(uri)
-          puts uri
 
           raise PeriodDoesNotExistError if res.empty?
 
