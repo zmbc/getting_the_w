@@ -124,21 +124,24 @@ function makePlayerShotChart(element, data, namespace) {
                      .domain([0, 0.944, 3])
                      .range(['#5458A2', '#FADC97', '#B02B48']);
 
-  var colorLegend = d3.legendColor()
-    .scale(colorScale)
-    .shape('circle')
-    .shapeRadius(0.5)
-    .shapePadding(0.5)
-    .cells([0, 0.944, 3])
-    .labels(['ice cold', 'league average', 'on fire']);
+  if (svg.select('.legend').empty()) {
+    var colorLegend = d3.legendColor()
+      .scale(colorScale)
+      .shape('circle')
+      .shapeRadius(0.5)
+      .shapePadding(0.5)
+      .cells([0, 0.944, 3])
+      .labels(['ice cold', 'league average', 'on fire']);
 
-  svg.append('g')
-    .attr("transform", "translate(0.75, 0.75)")
-    .call(colorLegend);
+    svg.append('g')
+      .attr('class', 'legend')
+      .attr("transform", "translate(0.75, 0.75)")
+      .call(colorLegend);
 
-  svg.selectAll('.legendCells .label').attr('transform', 'translate(1, 0.3)');
+    svg.selectAll('.legendCells .label').attr('transform', 'translate(1, 0.3)');
+  }
 
-  var circles = svg.selectAll('circle.shot-chart-point').data(data);
+  var circles = svg.selectAll('circle.shot-chart-point').data(data, function(d) {return d.loc_x + ',' + d.loc_y});
 
   d3.select(".d3-tip-" + namespace).remove();
 
@@ -212,19 +215,22 @@ function makeOverallTeamEffectShotChart(element, data, namespace, opts) {
 
   var colorScaleDummy = d3.scaleOrdinal().domain([0, 1]).range(['#ff4136', '#28b62c'])
 
-  var colorLegend = d3.legendColor()
-    .scale(colorScaleDummy)
-    .shape('circle')
-    .shapeRadius(0.5)
-    .shapePadding(0.5)
-    .cells([0, 1])
-    .labels(['worse when on court', 'better when on court']);
+  if (svg.select('.legend').empty()) {
+    var colorLegend = d3.legendColor()
+      .scale(colorScaleDummy)
+      .shape('circle')
+      .shapeRadius(0.5)
+      .shapePadding(0.5)
+      .cells([0, 1])
+      .labels(['worse when on court', 'better when on court']);
 
-  svg.append('g')
-    .attr("transform", "translate(0.75, 0.75)")
-    .call(colorLegend);
+    svg.append('g')
+      .attr('class', 'legend')
+      .attr("transform", "translate(0.75, 0.75)")
+      .call(colorLegend);
 
-  svg.selectAll('.legendCells .label').attr('transform', 'translate(1, 0.3)');
+    svg.selectAll('.legendCells .label').attr('transform', 'translate(1, 0.3)');
+  }
 
   d3.select(".d3-tip-" + namespace).remove();
 
@@ -289,19 +295,22 @@ function makeTeamAccuracyEffectShotChart(svg, namespace, data) {
     .domain([-3, -1, 0, 1, 3])
     .range(['#5458A2', '#5458A2', '#FADC97', '#B02B48', '#B02B48']);
 
-  var colorLegend = d3.legendColor()
-    .scale(colorScale)
-    .shape('circle')
-    .shapeRadius(0.5)
-    .shapePadding(0.5)
-    .cells([-1, 0, 1])
-    .labels(['make less when on court', 'no effect', 'make more when on court']);
+  if (svg.select('.legend').empty()) {
+    var colorLegend = d3.legendColor()
+      .scale(colorScale)
+      .shape('circle')
+      .shapeRadius(0.5)
+      .shapePadding(0.5)
+      .cells([-1, 0, 1])
+      .labels(['make less when on court', 'no effect', 'make more when on court']);
 
-  svg.append('g')
-    .attr("transform", "translate(0.75, 0.75)")
-    .call(colorLegend);
+    svg.append('g')
+      .attr('class', 'legend')
+      .attr("transform", "translate(0.75, 0.75)")
+      .call(colorLegend);
 
-  svg.selectAll('.legendCells .label').attr('transform', 'translate(1, 0.3)');
+    svg.selectAll('.legendCells .label').attr('transform', 'translate(1, 0.3)');
+  }
 
   var circles = svg.selectAll('circle.shot-chart-point').data(data);
 
@@ -372,19 +381,22 @@ function makeTeamSelectionEffectShotChart(svg, namespace, data) {
 
   var colorScaleDummy = d3.scaleOrdinal().domain([0, 1]).range(['#75caeb', '#ff851b']);
 
-  var colorLegend = d3.legendColor()
-    .scale(colorScaleDummy)
-    .shape('circle')
-    .shapeRadius(0.5)
-    .shapePadding(0.5)
-    .cells([0, 1])
-    .labels(['less shots when on court', 'more shots when on court']);
+  if (svg.select('.legend').empty()) {
+    var colorLegend = d3.legendColor()
+      .scale(colorScaleDummy)
+      .shape('circle')
+      .shapeRadius(0.5)
+      .shapePadding(0.5)
+      .cells([0, 1])
+      .labels(['less shots when on court', 'more shots when on court']);
 
-  svg.append('g')
-    .attr("transform", "translate(0.75, 0.75)")
-    .call(colorLegend);
+    svg.append('g')
+      .attr('class', 'legend')
+      .attr("transform", "translate(0.75, 0.75)")
+      .call(colorLegend);
 
-  svg.selectAll('.legendCells .label').attr('transform', 'translate(1, 0.3)');
+    svg.selectAll('.legendCells .label').attr('transform', 'translate(1, 0.3)');
+  }
 
   d3.select(".d3-tip-" + namespace).remove();
 
@@ -450,10 +462,16 @@ function makeBubbleChart(svg, namespace, data, opts) {
   var chartHeight = height - margin.top - margin.bottom;
   var chartWidth = width - margin.left - margin.right;
 
-  var g = svg.append('g')
-             .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-             .attr('height', chartHeight)
-             .attr('width', chartWidth);
+  var g;
+  if (svg.select('g.chart-g').empty()) {
+    g = svg.append('g')
+          .attr('class', 'chart-g')
+          .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+          .attr('height', chartHeight)
+          .attr('width', chartWidth);
+  } else {
+    g = svg.select('g.chart-g');
+  }
 
   var xDomain;
 
@@ -482,7 +500,10 @@ function makeBubbleChart(svg, namespace, data, opts) {
                      .domain([0, 0.944, 3])
                      .range(['#5458A2', '#FADC97', '#B02B48']);
 
+  svg.selectAll('.not-reusable').remove();
+
   svg.append("g")
+      .attr('class', 'not-reusable')
       .attr("transform", "translate(" + margin.left + "," + (chartHeight + margin.top) + ")")
       .call(
         d3.axisBottom(xScale)
@@ -491,6 +512,7 @@ function makeBubbleChart(svg, namespace, data, opts) {
       );
 
   svg.append("g")
+      .attr('class', 'not-reusable')
       .attr("transform", "translate(" + (margin.left - 30) + "," + ((chartHeight / 2) + margin.top) + ")")
       .append("text")
         .attr('transform', 'rotate(-90)')
@@ -498,12 +520,14 @@ function makeBubbleChart(svg, namespace, data, opts) {
         .text(opts.yAxis);
 
   svg.append("g")
+      .attr('class', 'not-reusable')
       .attr("transform", "translate(" + (margin.left + (chartWidth / 2)) + "," + (chartHeight + margin.top + 30) + ")")
       .append("text")
         .attr("text-anchor", "middle")
         .text(opts.xAxis);
 
   svg.append("g")
+      .attr('class', 'not-reusable')
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
       .call(d3.axisLeft(yScale).ticks(5));
 
@@ -517,7 +541,7 @@ function makeBubbleChart(svg, namespace, data, opts) {
 
   svg.call(tip);
 
-  var circles = g.selectAll('circle.dot').data(data);
+  var circles = g.selectAll('circle.dot').data(data, function(d) {return d[opts.x]});
 
   circles.enter()
     .append('circle')
