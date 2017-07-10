@@ -116,7 +116,7 @@ function makePlayerShotChart(element, data, namespace) {
   var height = 500;
   var svg = element;
 
-  var sizeScale = d3.scaleLinear()
+  var sizeScale = d3.scaleSqrt()
                     .domain([0, d3.max(data, function(d) { return +d.made + +d.missed; })])
                     .range([0, 1]);
 
@@ -203,9 +203,9 @@ function makeOverallTeamEffectShotChart(element, data, namespace, opts) {
   // NB: 3 and -3 are the theoretical max and min, but they will NEVER
   // occur except for in statistical noise. I arbitrarily chose 0.3 and -0.3 as
   // a reasonable expectation for highest actual player impact.
-  var sizeScale = d3.scaleLinear()
+  var sizeScale = d3.scaleSqrt()
                     .domain([-3, -0.3, 0, 0.3, 3])
-                    .range([5, 5, 0, 5, 5]);
+                    .range([1.5, 1.5, 0, 1.5, 1.5]);
 
   data.forEach(function(d) {
     d.impact = (d.on_court.frequency * d.on_court.pts_per_shot) - (d.off_court.frequency * d.off_court.pts_per_shot);
@@ -283,13 +283,13 @@ function makeTeamAccuracyEffectShotChart(svg, namespace, data) {
   var width = 500;
   var height = 500;
 
-  var sizeScale = d3.scaleLinear()
+  var sizeScale = d3.scaleSqrt()
                     .domain([0, d3.max(data,
                       function(d) {
                         return (d.on_court.frequency + d.off_court.frequency / 2);
                       }
                     )])
-                    .range([0, 1.75]);
+                    .range([0, 1.5]);
 
   var colorScale = d3.scaleLinear()
     .domain([-3, -1, 0, 1, 3])
@@ -373,9 +373,9 @@ function makeTeamSelectionEffectShotChart(svg, namespace, data) {
   // NB: 3 and -3 are the theoretical max and min, but they will NEVER
   // occur except for in statistical noise. I arbitrarily chose 0.3 and -0.3 as
   // a reasonable expectation for highest actual player impact.
-  var sizeScale = d3.scaleLinear()
+  var sizeScale = d3.scaleSqrt()
                     .domain([-1, -0.2, 0, 0.2, 1])
-                    .range([5, 5, 0, 5, 5]);
+                    .range([1.5, 1.5, 0, 1.5, 1.5]);
 
   var circles = svg.selectAll('circle').data(data);
 
