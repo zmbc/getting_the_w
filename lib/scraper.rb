@@ -15,9 +15,7 @@ module Scraper
     Shot = ::Shot
   end
 
-  # Scraping an entire season is useful for easily backfilling. Not recommended
-  # to do on the current season, as it will do a lot of extra unnecessary work
-  # on games that haven't happened yet.
+  # Scraping an entire season is useful for easily backfilling.
   def self.scrape_season(season)
     schedules = API::MonthSchedule.get_all_from_season(season: season)
     scrape_schedules schedules
@@ -62,7 +60,7 @@ module Scraper
   private_class_method def self.scrape_game(game)
     # We've probably seen the teams before, but it's far easier to just check
     # every time than to force a preliminary team-gathering step.
-    overwrite_teams = Time.zone.today.year == game.season
+    overwrite_teams = game.season == Time.zone.today.year
     create_or_update_team(game.home_team, overwrite: overwrite_teams)
     create_or_update_team(game.away_team, overwrite: overwrite_teams)
     create_or_update_game game
@@ -190,7 +188,7 @@ module Scraper
                         "#{period.game.id}!"
     end
 
-    starting_lineup.map! do |id|
+    starting_lineup.map do |id|
       find_or_create_player(id, period.game.season)
     end
   end
