@@ -222,7 +222,7 @@ function makeOverallTeamEffectShotChart(element, data, namespace, opts) {
       .shapeRadius(0.5)
       .shapePadding(0.5)
       .cells([0, 1])
-      .labels(['worse when on court', 'better when on court']);
+      .labels([opts.labelPrefix + ' worse when on court', opts.labelPrefix + ' better when on court']);
 
     svg.append('g')
       .attr('class', 'legend')
@@ -667,7 +667,8 @@ function getTeamCharts() {
       data,
       'team-overall-impact',
       {
-        higherIsBetter: true
+        higherIsBetter: true,
+        labelPrefix: 'offense'
       }
     );
     makeTeamAccuracyEffectShotChart(
@@ -692,7 +693,8 @@ function getOpposingTeamCharts() {
       data,
       'opposing-team-overall-impact',
       {
-        higherIsBetter: false
+        higherIsBetter: false,
+        labelPrefix: 'defense'
       }
     );
     makeTeamAccuracyEffectShotChart(
