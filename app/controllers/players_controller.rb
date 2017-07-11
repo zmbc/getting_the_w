@@ -5,6 +5,13 @@ class PlayersController < ApplicationController
       @players = Player
 
       @q.split(' ').each do |word|
+        # Three players in the WNBA have spaces in their last names, which
+        # throws a bit of a wrench into this simple word-based strategy. For
+        # now, I'm just ignoring the second words of their last names:
+        # - Elena Delle Donne
+        # - Amanda Zahui B
+        # - Erika de Souza
+        next if word.downcase.in? ['donne', 'b', 'souza']
         @players = @players.where('first_name like :query or last_name like :query',
                                 query: "#{word}%")
       end
