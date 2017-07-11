@@ -118,7 +118,7 @@ function makePlayerShotChart(element, data, namespace) {
 
   var sizeScale = d3.scaleSqrt()
                     .domain([0, d3.max(data, function(d) { return +d.made + +d.missed; })])
-                    .range([0, 1]);
+                    .range([0, 1.5]);
 
   var colorScale = d3.scaleLinear()
                      .domain([0, 0.944, 3])
@@ -205,7 +205,7 @@ function makeOverallTeamEffectShotChart(element, data, namespace, opts) {
   // a reasonable expectation for highest actual player impact.
   var sizeScale = d3.scaleSqrt()
                     .domain([-3, -0.3, 0, 0.3, 3])
-                    .range([1.5, 1.5, 0, 1.5, 1.5]);
+                    .range([3, 3, 0, 3, 3]);
 
   data.forEach(function(d) {
     d.impact = (d.on_court.frequency * d.on_court.pts_per_shot) - (d.off_court.frequency * d.off_court.pts_per_shot);
@@ -289,7 +289,7 @@ function makeTeamAccuracyEffectShotChart(svg, namespace, data) {
                         return (d.on_court.frequency + d.off_court.frequency / 2);
                       }
                     )])
-                    .range([0, 1.5]);
+                    .range([0, 3]);
 
   var colorScale = d3.scaleLinear()
     .domain([-3, -1, 0, 1, 3])
@@ -375,7 +375,7 @@ function makeTeamSelectionEffectShotChart(svg, namespace, data) {
   // a reasonable expectation for highest actual player impact.
   var sizeScale = d3.scaleSqrt()
                     .domain([-1, -0.2, 0, 0.2, 1])
-                    .range([1.5, 1.5, 0, 1.5, 1.5]);
+                    .range([3, 3, 0, 3, 3]);
 
   var circles = svg.selectAll('circle').data(data);
 
