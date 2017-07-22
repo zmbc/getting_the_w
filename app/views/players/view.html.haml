@@ -29,39 +29,39 @@
   .col-sm-12
     %h2 Shooting
   #player-viz-container.col-sm-12.col-md-6{style: 'min-height: 450px'}
-    %svg#player-viz{style: 'width:100%'}
+    %svg#player-viz{style:'width:100%;height:100%'}
   #distance-viz-container.col-sm-12.col-md-6{style: 'min-height: 450px'}
     %svg#distance-viz{style:'width:100%;height:100%'}
   #gametime-viz-container.col-sm-12.col-md-6{style: 'min-height: 450px'}
-    %svg#gametime-viz{style:'width:100%'}
+    %svg#gametime-viz{style:'width:100%;height:100%'}
   #over-season-viz-container.col-sm-12.col-md-6{style: 'min-height: 450px'}
-    %svg#over-season-viz{style:'width:100%'}
+    %svg#over-season-viz{style:'width:100%;height:100%'}
 .row
   .col-sm-12
     %h2 Offensive Impact
   #team-viz-container{style: 'min-height: 800px'}
     .col-sm-12.col-md-8.col-md-offset-2{style: 'position:relative'}
       %h3.text-center Overall
-      %svg#team-overall-impact-viz{style: 'width: 100%'}
+      %svg#team-overall-impact-viz{style:'width:100%;height:100%'}
     .col-sm-12.col-md-6{style: 'position:relative'}
       %h3.text-center Accuracy
-      %svg#team-accuracy-impact-viz{style: 'width: 100%'}
+      %svg#team-accuracy-impact-viz{style:'width:100%;height:100%'}
     .col-sm-12.col-md-6{style: 'position:relative'}
       %h3.text-center Shot Selection
-      %svg#team-selection-impact-viz{style: 'width: 100%'}
+      %svg#team-selection-impact-viz{style:'width:100%;height:100%'}
 .row
   .col-sm-12
     %h2 Defensive Impact
   #opposing-team-viz-container{style: 'min-height: 800px'}
     .col-sm-12.col-md-8.col-md-offset-2{style: 'position:relative'}
       %h3.text-center Overall
-      %svg#opposing-team-overall-impact-viz{style: 'width: 100%'}
+      %svg#opposing-team-overall-impact-viz{style:'width:100%;height:100%'}
     .col-sm-12.col-md-6{style: 'position:relative'}
       %h3.text-center Accuracy
-      %svg#opposing-team-accuracy-impact-viz{style: 'width: 100%'}
+      %svg#opposing-team-accuracy-impact-viz{style:'width:100%;height:100%'}
     .col-sm-12.col-md-6{style: 'position:relative'}
       %h3.text-center Shot Selection
-      %svg#opposing-team-selection-impact-viz{style: 'width: 100%'}
+      %svg#opposing-team-selection-impact-viz{style:'width:100%;height:100%'}
 - content_for(:js) do
   :javascript
     $(document).on('turbolinks:load', function() {
