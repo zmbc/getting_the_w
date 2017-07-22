@@ -585,7 +585,7 @@ function makeBubbleChart(svg, namespace, data, opts) {
 function getPlayerShotChart() {
   $('#player-viz-container').spin(true);
   $.getJSON('/players/' + gon.player_id + '/shot_chart_data/' + gon.season, function(data) {
-    $('#player-viz-container').spin(false);
+    $('#player-viz-container').css('min-height', 0).spin(false);
     makePlayerShotChart(d3.select('#player-viz'), data, 'player');
   });
 }
@@ -593,7 +593,7 @@ function getPlayerShotChart() {
 function getDistanceChart() {
   $('#distance-viz-container').spin(true);
   $.getJSON('/players/' + gon.player_id + '/distance_chart_data/' + gon.season, function(data) {
-    $('#distance-viz-container').spin(false);
+    $('#distance-viz-container').css('min-height', 0).spin(false);
     // We don't want to mess up our x axis with halfcourt heaves
     data = data.filter(function(d) {
       return d.distance <= 40;
@@ -617,7 +617,7 @@ function getDistanceChart() {
 function getGameTimeChart() {
   $('#gametime-viz-container').spin(true);
   $.getJSON('/players/' + gon.player_id + '/game_time_chart_data/' + gon.season, function(data) {
-    $('#gametime-viz-container').spin(false);
+    $('#gametime-viz-container').css('min-height', 0).spin(false);
     makeBubbleChart(d3.select('#gametime-viz'), 'gametime', data, {
       x: 'minutes',
       xAxis: 'Minutes into Game',
@@ -640,7 +640,7 @@ function getSeasonChart() {
     data.forEach(function(x) {
       x.date = new Date(x.date).valueOf();
     });
-    $('#over-season-viz-container').spin(false);
+    $('#over-season-viz-container').css('min-height', 0).spin(false);
     makeBubbleChart(d3.select('#over-season-viz'), 'over-season', data, {
       x: 'date',
       xAxis: 'Date',
@@ -661,7 +661,7 @@ function getSeasonChart() {
 function getTeamCharts() {
   $('#team-viz-container').spin(true);
   $.getJSON('/players/' + gon.player_id + '/team_effect_shot_chart_data/' + gon.season, function(data) {
-    $('#team-viz-container').spin(false);
+    $('#team-viz-container').css('min-height', 0).spin(false);
     makeOverallTeamEffectShotChart(
       d3.select('#team-overall-impact-viz'),
       data,
@@ -687,7 +687,7 @@ function getTeamCharts() {
 function getOpposingTeamCharts() {
   $('#opposing-team-viz-container').spin(true);
   $.getJSON('/players/' + gon.player_id + '/opposing_team_effect_shot_chart_data/' + gon.season, function(data) {
-    $('#opposing-team-viz-container').spin(false);
+    $('#opposing-team-viz-container').css('min-height', 0).spin(false);
     makeOverallTeamEffectShotChart(
       d3.select('#opposing-team-overall-impact-viz'),
       data,
