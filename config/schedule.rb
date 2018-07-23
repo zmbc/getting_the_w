@@ -19,6 +19,8 @@
 
 # Learn more: http://github.com/javan/whenever
 
+set :output, "#{path}/log/scrape.log"
+
 every :day, at: '4:00am' do
   rake 'scrape:last_day'
 end
