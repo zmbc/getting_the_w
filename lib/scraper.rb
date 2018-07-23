@@ -26,8 +26,8 @@ module Scraper
   def self.scrape_since(start)
     # Start is permitted to be either a Time or Date type.
     start = start.to_date if start.respond_to? :to_date
-    today = Time.zone.today
-    year_month_tuples = (start..today).map { |d| [d.year, d.month] }.uniq
+    year_month_tuples = (start..Time.zone.today)
+                        .map { |d| [d.year, d.month] }.uniq
 
     schedules = year_month_tuples.map do |year, month|
       API::MonthSchedule.get(season: year, month: month)
@@ -35,8 +35,8 @@ module Scraper
 
     schedules.each do |schedule|
       schedule.games
-              .select { |game| game.date >= start && game.date < today }
-              .each { |game| scrape_game(game) }
+              .select { |g| g.date >= start && g.date < Time.zone.today }
+              .each { |g| scrape_game(g) }
     end
   end
 
@@ -48,13 +48,12 @@ module Scraper
   end
 
   private_class_method def self.scrape_schedule(schedule)
-    today = Time.zone.today
     schedule.games
-      .select { |game| game.date < today }
-      .each do |game|
-        Utility.wait_a_sec
-        scrape_game game
-      end
+            .select { |game| game.date < Time.zone.today }
+            .each do |game|
+              Utility.wait_a_sec
+              scrape_game game
+            end
   end
 
   private_class_method def self.scrape_game(game)
@@ -188,7 +187,7 @@ module Scraper
                         "#{period.game.id}!"
     end
 
-    starting_lineup.map do |id|
+    starting_lineup.map! do |id|
       find_or_create_player(id, period.game.season)
     end
   end
