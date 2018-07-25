@@ -13,15 +13,18 @@
 
 .row
   .col-xs-4.number-container
-    .number#pps=@summary_stats[:pps].round(2)
+    - pps = @summary_stats[:pps]
+    .number#pps=pps.nil? ? '-' : @summary_stats[:pps].round(2)
     .number-label
       points per shot
   .col-xs-4.number-container
-    .number#offensive-delta=(@summary_stats[:offensive_delta] * 100).round(1)
+    - offensive_delta = @summary_stats[:offensive_delta]
+    .number#offensive-delta=offensive_delta.nil? ? '-' : (offensive_delta * 100).round(1)
     .number-label
       offensive impact (points per 100 shots)
   .col-xs-4.number-container
-    .number#defensive-delta=(@summary_stats[:defensive_delta] * 100).round(1)
+    - defensive_delta = @summary_stats[:defensive_delta]
+    .number#defensive-delta=defensive_delta.nil? ? '-' : (@summary_stats[:defensive_delta] * 100).round(1)
     .number-label
       defensive impact (points per 100 shots)
 

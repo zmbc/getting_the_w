@@ -61,7 +61,10 @@ class Player < ApplicationRecord
                 .where(game_id: games, team_id: teams)
                 .where.not(id: shots_on_court.ids)
 
-    pps_of(on_court) - pps_of(off_court)
+    on_court_pps = pps_of(on_court)
+    off_court_pps = pps_of(off_court)
+    return nil if on_court_pps.nil? || off_court_pps.nil?
+    on_court_pps - off_court_pps
   end
 
   def defensive_delta(season)
@@ -90,11 +93,15 @@ class Player < ApplicationRecord
                 .where.not(team_id: teams)
                 .where.not(id: shots_on_court.ids)
 
-    pps_of(on_court) - pps_of(off_court)
+    on_court_pps = pps_of(on_court)
+    off_court_pps = pps_of(off_court)
+    return nil if on_court_pps.nil? || off_court_pps.nil?
+    on_court_pps - off_court_pps
   end
 
   def pps_of(shots)
-    points = shots.inject(0) {|sum, shot| sum + (shot.made ? (shot.three ? 3 : 2) : 0)}
+    points = shots.inject(0) { |sum, shot| sum + (shot.made ? (shot.three ? 3 : 2) : 0) }
+    return nil if shots.empty?
     points.to_f / shots.count.to_f
   end
 
@@ -268,15 +275,29 @@ class Player < ApplicationRecord
         end
 
         on_court_for_loc[:frequency] =
-          (on_court_for_loc[:made] + on_court_for_loc[:missed] || 0) / on_court_count.to_f
+          if on_court_count > 0
+            (on_court_for_loc[:made] + on_court_for_loc[:missed] || 0) / on_court_count.to_f
+          end
         off_court_for_loc[:frequency] =
-          (off_court_for_loc[:made] + off_court_for_loc[:missed] || 0) / off_court_count.to_f
+          if off_court_count > 0
+            (off_court_for_loc[:made] + off_court_for_loc[:missed] || 0) / off_court_count.to_f
+          end
+
+        frequency_delta =
+          if !on_court_for_loc[:frequency].nil? && !off_court_for_loc[:frequency].nil?
+            on_court_for_loc[:frequency] - off_court_for_loc[:frequency]
+          end
+
+        pps_delta =
+          if !on_court_for_loc[:pts_per_shot].nil? && !off_court_for_loc[:pts_per_shot].nil?
+            on_court_for_loc[:pts_per_shot] - off_court_for_loc[:pts_per_shot]
+          end
 
         {
           on_court: on_court_for_loc,
           off_court: off_court_for_loc,
-          frequency_delta: on_court_for_loc[:frequency] - off_court_for_loc[:frequency],
-          pps_delta: on_court_for_loc[:pts_per_shot] - off_court_for_loc[:pts_per_shot],
+          frequency_delta: frequency_delta,
+          pps_delta: pps_delta,
           x: loc_x,
           y: loc_y
         }
