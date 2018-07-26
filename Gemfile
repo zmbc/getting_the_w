@@ -8,6 +8,7 @@ end
 gem 'figaro'
 gem 'gon'
 gem 'haml'
+gem 'pkg-config', '~> 1.1'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '~> 5.1.0'
