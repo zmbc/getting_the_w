@@ -129,7 +129,7 @@ module Scraper
     unless players.include? leaving_player
       Rails.logger.warn "A player left that we didn't think was in the"\
                         "game! player: #{leaving_player.id} game:"\
-                        "#{game_id} period: #{period}"
+                        "#{period.game.id} period: #{period.period_num}"
     end
 
     players.add entering_player
