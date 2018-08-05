@@ -214,23 +214,22 @@ module Scraper
     non_starters_on_court = Set.new
     period.events.each do |event|
       if event.type == :substitution
-        leaving_player = event.player_id
-        entering_player = event.extra_player_id
-
-        non_starters_on_court.delete leaving_player
-        non_starters_on_court.add entering_player
-      elsif event.team_id == team_id
-        players_involved_in(event).each do |player|
+        perform_substitution(
+          players: non_starters_on_court,
+          event: event,
+          period: period,
+        )
+      elsif event.team_id == team_id || event.team_id
+        players =
+          if event.team_id == team_id
+            players_involved_in event
+          else
+            [event.opposing_player_id]
+          end
+        players.each do |player|
           next if !player || non_starters_on_court.include?(player)
-          # Someone did something who wasn't subbed in! They must be a
-          # starter!
-          result.add player
-        end
-      elsif event.team_id
-        # Other team's event
-        player = event.opposing_player_id
-        if player && !non_starters_on_court.include?(player)
-          # opid's seem to have occasional problems (like plays where players
+          # TODO: Disambiguate this by fetching the box score
+          # (o)pids seem to have occasional problems (like plays where players
           # are supposedly fouling their teammates). In an effort to guard
           # against this, we make sure this player hasn't done any primary
           # actions for the other team.
@@ -245,7 +244,7 @@ module Scraper
           else
             Rails.logger.warn "In game #{period.game.id}"\
                               " period #{period.period_num} player #{player}"\
-                              ' has conflicting opid!'
+                              ' appears to be playing for both teams!'
           end
         end
       end
