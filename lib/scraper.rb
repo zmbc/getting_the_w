@@ -183,7 +183,7 @@ module Scraper
 
     if starting_lineup.size != 5
       # If both passes fail, we give up and stick with what we have.
-      Rails.logger.warn 'Weird starting lineup situation for game'\
+      Rails.logger.warn 'Weird starting lineup situation for game '\
                         "#{period.game.id}!"
     end
 
