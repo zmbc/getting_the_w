@@ -18,7 +18,7 @@ module Scraper
 
           json = JSON.parse(res)
 
-          events = json[ROOT_PROPERTY][EVENTS_PROPERTY].map do |play_json|
+          events = (json[ROOT_PROPERTY][EVENTS_PROPERTY] || []).map do |play_json|
             Event.from_json play_json
           end
 
