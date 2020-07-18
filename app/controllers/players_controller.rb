@@ -24,11 +24,11 @@ class PlayersController < ApplicationController
   def view
     @player = Player.find params[:id].to_i
     first_year = Game.includes(:shots)
-                     .where(shots: {player_id: @player.id})
+                     .where(shots: { player_id: @player.id })
                      .minimum(:date).year
     last_year = Game.includes(:shots)
-                     .where(shots: {player_id: @player.id})
-                     .maximum(:date).year
+                    .where(shots: { player_id: @player.id })
+                    .maximum(:date).year
     @years = first_year..last_year
     gon.player_id = @player.id
     @season = params[:season].blank? ? Time.now.year : params[:season].to_i
