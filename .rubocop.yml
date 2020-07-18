@@ -1,12 +1,11 @@
+require: rubocop-rails
+
 AllCops:
   Exclude:
     - 'config/**/*.rb'
     - 'db/migrate/*.rb'
     - 'db/schema.rb'
     - 'Gemfile'
-
-Rails:
-  Enabled: true
 
 Metrics/BlockLength:
   Exclude:
