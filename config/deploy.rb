@@ -34,11 +34,9 @@ set :repo_url, 'https://github.com/zmbc/getting_the_w.git' # Edit this to match 
 set :branch, :master
 set :deploy_to, '/var/www/getting_the_w'
 set :pty, true
-set :linked_files, %w[config/database.yml]
+set :linked_files, %w[config/database.yml config/application.yml]
 set :linked_dirs, %w[log tmp/pids tmp/cache tmp/sockets vendor/bundle public/system public/uploads]
 set :keep_releases, 5
-set :rvm_type, :user
-set :rvm_ruby_version, 'ruby-2.4.0'
 
 set :puma_rackup, -> { File.join(current_path, 'config.ru') }
 set :puma_state, "#{shared_path}/tmp/pids/puma.state"
