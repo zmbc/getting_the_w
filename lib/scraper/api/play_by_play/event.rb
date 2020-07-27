@@ -25,7 +25,8 @@ module Scraper
         }.freeze
 
         FOUL_TYPE_CODES = {
-          11 => :technical
+          11 => :technical,
+          16 => :technical, # Double technical
         }.freeze
 
         attr_reader :player_id, :opposing_player_id, :extra_player_id, :team_id,
@@ -102,6 +103,10 @@ module Scraper
 
         def could_be_a_coach?
           technical? || @type == :ejection
+        end
+
+        def team_event?
+          @player_id == @team_id
         end
       end
     end

@@ -18,6 +18,8 @@ module Scraper
 
           json = JSON.parse(res)
 
+          raise PeriodDoesNotExistError if json['Message'] == 'Object not found.'
+
           events = (json[ROOT_PROPERTY][EVENTS_PROPERTY] || []).map do |play_json|
             Event.from_json play_json
           end

@@ -13,9 +13,17 @@ module Scraper
       attr_reader :id, :first_name, :last_name, :position, :team_id
 
       def self.get(id, season)
-        uri = URI(format(URI_TEMPLATE, season: season, id: id))
-        res = Net::HTTP.get(uri)
-        if res.empty?
+        res = nil
+
+        # Unfortunately, the data
+        # we just grabbed might be stale.
+        (season..Time.zone.now.year).each do |year|
+          uri = URI(format(URI_TEMPLATE, season: year, id: id))
+          maybe_res = Net::HTTP.get(uri)
+          res = maybe_res unless maybe_res.empty? || JSON.parse(maybe_res)['Message'] == 'Object not found.'
+        end
+
+        if res.blank? || JSON.parse(res)['Message'] == 'Object not found.'
           # This is a duplicate/corrupted player
           new(id: id,
               first_name: 'Unknown',
@@ -23,14 +31,6 @@ module Scraper
               position: 'Unknown',
               team_id: DB::Team.find_or_create_by(city: 'Unknown', name: 'Unknown').id)
         else
-          # We've now verified that the player's valid. Unfortunately, the data
-          # we just grabbed might be stale.
-          ((season + 1)..Time.zone.now.year).each do |year|
-            uri = URI(format(URI_TEMPLATE, season: year, id: id))
-            maybe_res = Net::HTTP.get(uri)
-            res = maybe_res unless maybe_res.empty?
-          end
-
           json = JSON.parse(res)[ROOT_PROPERTY]
 
           new(id: id,

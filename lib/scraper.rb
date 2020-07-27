@@ -98,13 +98,17 @@ module Scraper
     away_players = get_starting_lineup(period, away_id)
     period.events.each do |event|
       if event.shot?
-        create_shot(
-          event: event,
-          period: period,
-          home_id: home_id,
-          home_players: home_players,
-          away_players: away_players
-        )
+        if event.player_id.nil? || event.player_id.zero?
+          Rails.logger.warn "Unattributed shot in game #{period.game.id} event #{event.index}"
+        else
+          create_shot(
+            event: event,
+            period: period,
+            home_id: home_id,
+            home_players: home_players,
+            away_players: away_players
+          )
+        end
       elsif event.type == :substitution
         players = event.team_id == home_id ? home_players : away_players
         players = perform_substitution(players: players,
@@ -214,7 +218,7 @@ module Scraper
     non_starters_on_court = Set.new
     period.events.each do |event|
       if event.type == :substitution
-        perform_substitution(
+        non_starters_on_court = perform_substitution(
           players: non_starters_on_court,
           event: event,
           period: period,
@@ -227,7 +231,8 @@ module Scraper
             [event.opposing_player_id]
           end
         players.each do |player|
-          next if !player || non_starters_on_court.include?(player)
+          next if !player || non_starters_on_court.map(&:id).include?(player)
+
           # TODO: Disambiguate this by fetching the box score
           # (o)pids seem to have occasional problems (like plays where players
           # are supposedly fouling their teammates). In an effort to guard
@@ -258,7 +263,7 @@ module Scraper
 
     # Coaches can do events that end up in the play by play, like get a
     # technical
-    result.add event.player_id unless event.could_be_a_coach?
+    result.add event.player_id unless event.could_be_a_coach? || event.team_event?
 
     # In a jump ball, extra_player_id is the player who
     # recovers the ball, who can be on either team.
