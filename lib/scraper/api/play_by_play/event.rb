@@ -33,9 +33,9 @@ module Scraper
                     :type, :index, :loc_x, :loc_y, :seconds_remaining
 
         def self.from_json(json)
-          player_id = Utility.correct_player_id(json[PLAYER_ID_PROPERTY])
-          opposing_player_id = Utility.correct_player_id(json[OPPOSING_PLAYER_ID_PROPERTY])
-          extra_player_id = Utility.correct_player_id(json[EXTRA_PLAYER_ID_PROPERTY])
+          player_id = Utility.to_i_or_nil(json[PLAYER_ID_PROPERTY])
+          opposing_player_id = Utility.to_i_or_nil(json[OPPOSING_PLAYER_ID_PROPERTY])
+          extra_player_id = Utility.to_i_or_nil(json[EXTRA_PLAYER_ID_PROPERTY])
 
           type = TYPE_CODES[json[TYPE_PROPERTY]]
           foul_type = FOUL_TYPE_CODES[json[FOUL_TYPE_PROPERTY]]

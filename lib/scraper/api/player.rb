@@ -1,29 +1,32 @@
 module Scraper
   module API
     class Player
-      ROOT_PROPERTY = 'pl'.freeze
+      @season_responses = {}
+
       FIRST_NAME_PROPERTY = 'fn'.freeze
       LAST_NAME_PROPERTY = 'ln'.freeze
       POSITION_PROPERTY = 'pos'.freeze
       TEAM_ID_PROPERTY = 'tid'.freeze
 
       URI_TEMPLATE = API::BASE_URI +
-                     '%<season>s/players/playercard_%<id>i_01.json'
+                     '%<season>s/players/10_player_info.json'
 
       attr_reader :id, :first_name, :last_name, :position, :team_id
 
       def self.get(id, season)
-        res = nil
+        player_json = nil
 
-        # Unfortunately, the data
-        # we just grabbed might be stale.
         (season..Time.zone.now.year).each do |year|
-          uri = URI(format(URI_TEMPLATE, season: year, id: id))
-          maybe_res = Net::HTTP.get(uri)
-          res = maybe_res unless maybe_res.empty? || JSON.parse(maybe_res)['Message'] == 'Object not found.'
+          unless @season_responses.key?(season)
+            Utility.wait_a_sec
+            response = Net::HTTP.get(URI(format(URI_TEMPLATE, season: year)))
+            @season_responses[season] = JSON.parse(response)['pls']['pl']
+          end
+
+          player_json = @season_responses[season].find { |p| p['pid'] == id }
         end
 
-        if res.blank? || JSON.parse(res)['Message'] == 'Object not found.'
+        if player_json.nil?
           # This is a duplicate/corrupted player
           new(id: id,
               first_name: 'Unknown',
@@ -31,13 +34,11 @@ module Scraper
               position: 'Unknown',
               team_id: DB::Team.find_or_create_by(city: 'Unknown', name: 'Unknown').id)
         else
-          json = JSON.parse(res)[ROOT_PROPERTY]
-
           new(id: id,
-              first_name: json[FIRST_NAME_PROPERTY],
-              last_name: json[LAST_NAME_PROPERTY],
-              position: json[POSITION_PROPERTY],
-              team_id: json[TEAM_ID_PROPERTY])
+              first_name: player_json[FIRST_NAME_PROPERTY],
+              last_name: player_json[LAST_NAME_PROPERTY],
+              position: player_json[POSITION_PROPERTY],
+              team_id: player_json[TEAM_ID_PROPERTY])
         end
       end
 
